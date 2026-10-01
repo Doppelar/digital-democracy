@@ -28,26 +28,26 @@ function localUser(perTab){
 function supabaseDb(sb){
   return {
     async createRoom(code, state){
-      const {data, error} = await sb.rpc('create_room', {p_code: code, p_state: state});
+      const {data, error} = await sb.rpc('machi_create_room', {p_code: code, p_state: state});
       if (error) throw fail(); return data === true;
     },
     doc(path){
       const m = path.match(ROOM); if (!m) throw new TypeError('bad path ' + path);
       const code = m[1];
       const get = async () => {
-        const {data, error} = await sb.from('rooms').select('state').eq('code', code).maybeSingle();
+        const {data, error} = await sb.from('machi_rooms').select('state').eq('code', code).maybeSingle();
         if (error) throw fail(); return data ? data.state : null;
       };
       return {
         async get(){ return snapDoc(await get()); },
-        async set(state){ const {error} = await sb.rpc('set_room', {p_code: code, p_state: state}); if (error) throw fail(); },
-        async update(patch){ const {error} = await sb.rpc('merge_room', {p_code: code, p_patch: patch}); if (error) throw fail(); },
+        async set(state){ const {error} = await sb.rpc('machi_set_room', {p_code: code, p_state: state}); if (error) throw fail(); },
+        async update(patch){ const {error} = await sb.rpc('machi_merge_room', {p_code: code, p_patch: patch}); if (error) throw fail(); },
         onSnapshot(next, onErr){
           let last = '', dead = false;
           const deliver = st => { const s = JSON.stringify(st); if (s === last) return; last = s; next(snapDoc(st)); };
           const refresh = () => get().then(st => { if (!dead) deliver(st); }).catch(() => {});
           const ch = sb.channel('room-' + code + '-' + Math.random().toString(36).slice(2,7))
-            .on('postgres_changes', {event: '*', schema: 'public', table: 'rooms', filter: 'code=eq.' + code},
+            .on('postgres_changes', {event: '*', schema: 'public', table: 'machi_rooms', filter: 'code=eq.' + code},
                 p => { if (!dead) deliver(p.new && p.new.state ? p.new.state : null); })
             .subscribe(status => { if (status === 'SUBSCRIBED') refresh(); });
           refresh();
@@ -66,10 +66,10 @@ function supabaseDb(sb){
           where(){ return q; }, orderBy(){ return q; }, limit(n){ lim = n; return q; },
           async add(m){
             const row = {room, seat: m.seat, text: String(m.text).slice(0,80), t: m.t || Date.now(), npc: !!m.npc};
-            const {error} = await sb.from('chat').insert(row); if (error) throw fail();
+            const {error} = await sb.from('machi_chat').insert(row); if (error) throw fail();
           },
           async get(){
-            const {data, error} = await sb.from('chat').select('*').eq('room', room).order('t', {ascending: false}).limit(lim);
+            const {data, error} = await sb.from('machi_chat').select('*').eq('room', room).order('t', {ascending: false}).limit(lim);
             if (error) throw fail(); return snapList(data || []);
           },
           onSnapshot(next){
@@ -77,7 +77,7 @@ function supabaseDb(sb){
             const push = () => { list.sort((a,z) => z.t - a.t); list = list.slice(0, lim); next(snapList(list)); };
             const refresh = () => q.get().then(s => { if (dead) return; list = s.docs.map(d => d.data()); push(); }).catch(() => {});
             const ch = sb.channel('chat-' + room + '-' + Math.random().toString(36).slice(2,7))
-              .on('postgres_changes', {event: 'INSERT', schema: 'public', table: 'chat', filter: 'room=eq.' + room},
+              .on('postgres_changes', {event: 'INSERT', schema: 'public', table: 'machi_chat', filter: 'room=eq.' + room},
                   p => { if (dead || !p.new) return; if (!list.some(x => x.id === p.new.id)) { list.push(p.new); push(); } })
               .subscribe(status => { if (status === 'SUBSCRIBED') refresh(); });
             refresh();
@@ -93,7 +93,7 @@ function supabaseDb(sb){
           where(){ return q; }, orderBy(){ return q; }, limit(n){ lim = n; return q; },
           async get(){
             const since = new Date(Date.now() - 12*3600e3).toISOString();
-            const {data, error} = await sb.from('rooms').select('code,state').gt('updated_at', since).order('updated_at', {ascending: false}).limit(lim);
+            const {data, error} = await sb.from('machi_rooms').select('code,state').gt('updated_at', since).order('updated_at', {ascending: false}).limit(lim);
             if (error) throw fail(); return snapList((data || []).map(r => ({id: r.code, ...r.state})));
           },
         };
@@ -156,7 +156,7 @@ window.MachiBackend = {
     }
     try {
       const sb = window.supabase.createClient(cfg.SUPABASE_URL, cfg.SUPABASE_ANON_KEY, {auth: {persistSession: false}});
-      const {error} = await sb.from('rooms').select('code').limit(1);
+      const {error} = await sb.from('machi_rooms').select('code').limit(1);
       if (error) return {db: null, user, why: 'Supabase につながりませんでした。supabase.sql を実行したか、URLとキーが正しいか確かめてください。'};
       return {db: supabaseDb(sb), user, why: ''};
     } catch {

@@ -18,6 +18,8 @@
 
 1. <https://supabase.com> を開き、「Start your project」からアカウントをつくる（GitHubアカウントでも登録できます）。
 2. 「New project」を押す。
+   > 無料プランのプロジェクトは2つまでです。もう2つ使っているときは、**今あるプロジェクトを使ってOK**です。このゲームのテーブルや関数はすべて `machi_` で始まるので、ほかのアプリのデータとは混ざりません。その場合は手順4へ進んでください。
+
    - Name：`machi`（なんでもOK）
    - Database Password：自動で作られたものでOK（ゲームでは使いません）
    - Region：**Northeast Asia (Tokyo)**
@@ -84,7 +86,7 @@
 - 古いデータを消したいときは、Supabase の SQL Editor で次を実行します。
 
   ```sql
-  delete from rooms where updated_at < now() - interval '1 day';
+  delete from machi_rooms where updated_at < now() - interval '1 day';
   ```
 
 ## ファイルの中身
