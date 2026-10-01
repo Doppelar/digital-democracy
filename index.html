@@ -215,6 +215,7 @@ body{padding-top:env(safe-area-inset-top,0px)}
 <script src="config.js"></script>
 <script src="vendor/supabase.js"></script>
 <script src="vendor/qrcode.js"></script>
+<script src="vendor/mqtt.min.js"></script>
 <script src="backend.js"></script>
 </head>
 <body>
@@ -362,7 +363,7 @@ let spectator=false;
 let errMsg='';
 let writeQ = Promise.resolve();
 let draft = {key:'', budget:null, amend:{from:'tax', to:'school', amt:1, reason:''}};
-let endOpen = false; let backendLabel = '';
+let endOpen = false; let backendLabel = ''; let hostKeeps = false; let wakeLock = null;
 let chat = [], chatUnsub = null, talkOpen = false, seenCount = 0, lastSend = 0, spoken = new Set(), chatReady = false;
 let startView = {nick: ls.get('machi.nick')||'', join:'', joinDoc:null, busy:false, msg:''};
 
@@ -644,6 +645,7 @@ function render(){
     renderTalk();
   }
   drawQR();
+  if (hostKeeps && mode==='online' && S && isHost() && !wakeLock && navigator.wakeLock){ navigator.wakeLock.request('screen').then(l=>{ wakeLock=l; l.addEventListener('release',()=>{wakeLock=null;}); }).catch(()=>{}); }
   if (fid){ const el=document.getElementById(fid); if (el){ el.focus({preventScroll:true}); if (sel) try{ el.setSelectionRange(sel[0], sel[1]); }catch{} } }
 }
 
@@ -743,7 +745,7 @@ function viewStart(){
       ${join}
     ` : capsReady ? `<div class="err">${esc(capWhy||'オンラインにつながりませんでした。')}</div>
       <p class="small">次のことをためしてください。</p>
-      <ol class="rules small"><li>インターネットにつながっているか確かめる。</li><li>係の人は、config.js の Supabase の設定と、supabase.sql を実行したかを確かめる。</li></ol>
+      <ol class="rules small"><li>インターネットにつながっているか確かめる。</li><li>学校や会社のWi-Fiでつながらないときは、モバイル回線に切りかえてためす。</li></ol>
       <button class="btn ghost" data-act="retry">もう一度つなぐ</button>` : '<p class="muted">接続を確認しています…</p>'}
   </section>
   ${db ? watchSection() : ''}
@@ -804,7 +806,8 @@ function viewBar(){
   const msgs = lastMsgs(); const lm = msgs[msgs.length-1];
   const unread = Math.max(0, chat.length - seenCount);
   const ticker = `<button class="ticker" data-act="openTalk" aria-label="議場の声をひらく"><span class="lab">議場の声</span><span class="txt">${lm ? esc((SEATINFO[lm.seat]?nameOf(lm.seat)+'：':'')+lm.text) : (me ? 'タップして発言しよう' : 'まだ発言はありません')}</span>${unread && !talkOpen ? `<span class="unread num">${unread}</span>`:''}</button>`;
-  return `<div class="bar-in">${ticker}<div class="seats">${chips}</div>${ctl}</div>`;
+  const keep = hostKeeps && mode==='online' && isHost() && S.phase!=='final' ? '<p class="small" style="color:var(--bad);font-weight:700;margin:0">市長の画面はゲームの記録係です。終わるまで閉じたりスリープさせたりしないでください。</p>' : '';
+  return `<div class="bar-in">${keep}${ticker}<div class="seats">${chips}</div>${ctl}</div>`;
 }
 
 function catRow(c, n, extra=''){
@@ -1343,7 +1346,7 @@ async function connect(){
   capsReady=false; capWhy=''; render();
   try{
     const r = await window.MachiBackend.init();
-    db = r.db; user = r.user; uid = await user.id(); canWrite = true; capWhy = r.why || ''; backendLabel = r.label || '';
+    db = r.db; user = r.user; uid = await user.id(); canWrite = true; capWhy = r.why || ''; backendLabel = r.label || ''; hostKeeps = !!r.hostKeepsState;
   }catch{ capWhy = '接続に失敗しました。'; }
   capsReady=true;
   // URL の ?room=1234（参加） / ?watch=1234（観戦）
