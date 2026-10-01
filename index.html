@@ -1,0 +1,1366 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="description" content="市長1人と議員3人がスマホで参加し、3年間まちの予算を決めながら、対面とデジタルの民主主義を体験するゲーム。">
+<meta name="theme-color" content="#0B7A66">
+<title>デジタルまちづくり議会</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@500;700;800&family=BIZ+UDPGothic:wght@400;700&display=swap">
+<style>
+/* Layout: phone-first single column "市役所の掲示板" — header strip, one phase card, sticky action bar */
+:root{
+  --bg:#EAF1EE; --surface:#FFFFFF; --sunk:#F3F7F5; --ink:#17302A; --muted:#5A6F69; --line:#D2DED9;
+  --accent:#0B7A66; --accent-ink:#FFFFFF; --sun:#F2B705; --sun-soft:#FFF3C7;
+  --good:#2C8A4B; --bad:#C4442E; --bad-soft:#FBE6E1; --good-soft:#E2F3E7;
+  --c-school:#DB7316; --c-care:#CF3F66; --c-road:#3667CC; --c-park:#2A934A; --c-tax:#8457C4;
+  --f-display:"M PLUS Rounded 1c","Hiragino Maru Gothic ProN","BIZ UDPGothic",system-ui,sans-serif;
+  --f-body:"BIZ UDPGothic","Hiragino Sans","Noto Sans JP",system-ui,sans-serif;
+  --r:14px;
+  --sky:#CFE8F2; --night:#24345C; --ground:#BFD8B8; --wall:#F4EBDD; --roof:#B5553C; --skin:#F2C9A0; --glow:#FFE89A; --screen:#1E2B3A;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0F1B18; --surface:#172622; --sunk:#12201C; --ink:#E4EFEB; --muted:#9BB0AA; --line:#2A3D38;
+  --accent:#3BC2A6; --accent-ink:#06231D; --sun:#F5C93A; --sun-soft:#3A3115;
+  --good:#5BC27D; --bad:#F07A63; --bad-soft:#3A1E19; --good-soft:#173322;
+  --c-school:#F09A4A; --c-care:#EE6E90; --c-road:#6C98F0; --c-park:#5BC277; --c-tax:#B08AEB;
+  --sky:#28485A; --night:#121B33; --ground:#2E4A35; --wall:#5A5248; --roof:#8A3F2D; --skin:#D9AE86; --glow:#E8C45A; --screen:#0B121A;
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0F1B18; --surface:#172622; --sunk:#12201C; --ink:#E4EFEB; --muted:#9BB0AA; --line:#2A3D38;
+  --accent:#3BC2A6; --accent-ink:#06231D; --sun:#F5C93A; --sun-soft:#3A3115;
+  --good:#5BC27D; --bad:#F07A63; --bad-soft:#3A1E19; --good-soft:#173322;
+  --c-school:#F09A4A; --c-care:#EE6E90; --c-road:#6C98F0; --c-park:#5BC277; --c-tax:#B08AEB;
+  --sky:#28485A; --night:#121B33; --ground:#2E4A35; --wall:#5A5248; --roof:#8A3F2D; --skin:#D9AE86; --glow:#E8C45A; --screen:#0B121A;
+  color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{min-height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.65;padding-inline:16px;padding-block:0}
+.wrap{max-width:560px;margin:0 auto;padding-block:14px 120px;display:flex;flex-direction:column;gap:14px}
+h1,h2,h3{font-family:var(--f-display);line-height:1.3;margin:0;text-wrap:balance;word-break:keep-all;overflow-wrap:anywhere}
+h1{font-size:1.6rem;font-weight:800}
+h2{font-size:1.25rem;font-weight:800}
+h3{font-size:1.02rem;font-weight:700}
+p{margin:0}
+.muted{color:var(--muted)}
+.small{font-size:.84rem}
+.num{font-variant-numeric:tabular-nums}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid var(--sun);outline-offset:2px}
+.btn{border:0;border-radius:999px;padding:.7em 1.2em;font-family:var(--f-display);font-weight:700;background:var(--accent);color:var(--accent-ink);font-size:1rem}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.ghost{background:transparent;color:var(--accent);box-shadow:inset 0 0 0 2px var(--accent)}
+.btn.sun{background:var(--sun);color:#2A2200}
+.btn.wide{width:100%}
+.row > .btn{white-space:nowrap;flex:none}
+.row > input{flex:1;min-width:0}
+.btn.sm{padding:.45em .9em;font-size:.9rem}
+input[type=text],select{font:inherit;color:var(--ink);background:var(--surface);border:2px solid var(--line);border-radius:10px;padding:.55em .7em;width:100%}
+.card{background:var(--surface);border-radius:var(--r);padding:16px;display:flex;flex-direction:column;gap:12px;border:1px solid var(--line)}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.between{justify-content:space-between}
+.stack{display:flex;flex-direction:column;gap:10px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media (max-width:380px){.grid2{grid-template-columns:1fr}}
+
+/* header */
+.top{display:flex;flex-direction:column;gap:8px}
+.brand{display:flex;align-items:baseline;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.brand .t{font-family:var(--f-display);font-weight:800;font-size:1.05rem}
+.code{font-family:var(--f-display);font-weight:800;letter-spacing:.12em;background:var(--ink);color:var(--bg);border-radius:8px;padding:.1em .5em}
+.steps{display:flex;gap:4px;overflow-x:auto}
+.steps span{flex:1 0 auto;font-size:.72rem;text-align:center;padding:.25em .45em;border-radius:6px;background:var(--sunk);color:var(--muted);white-space:nowrap}
+.steps span.on{background:var(--accent);color:var(--accent-ink);font-weight:700}
+.steps span.done{color:var(--ink)}
+.me{display:flex;align-items:center;gap:8px;font-size:.9rem}
+.badge{display:inline-flex;align-items:center;gap:.35em;border-radius:999px;padding:.15em .7em;font-size:.82rem;font-weight:700;background:var(--sun-soft);color:var(--ink);border:1px solid var(--sun)}
+
+/* hanko marks */
+.mark{flex:none;display:inline-grid;place-items:center;width:2em;height:2em;border-radius:50%;font-family:var(--f-display);font-weight:800;color:#fff;font-size:.95rem}
+.mk-school{background:var(--c-school)} .mk-care{background:var(--c-care)} .mk-road{background:var(--c-road)} .mk-park{background:var(--c-park)} .mk-tax{background:var(--c-tax)}
+.mk-m{background:var(--accent);color:var(--accent-ink)}
+
+/* voices */
+.voices{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.voice{background:var(--sunk);border-radius:10px;padding:8px 10px;font-size:.84rem;line-height:1.5}
+.voice b{display:block;font-size:.72rem;color:var(--muted);font-weight:700}
+.counter{font-family:var(--f-display);font-weight:800;font-size:2.4rem;line-height:1;color:var(--accent)}
+.bars{display:flex;flex-direction:column;gap:6px}
+.bar{display:grid;grid-template-columns:8.5em 1fr 3em;gap:8px;align-items:center;font-size:.85rem}
+.bar .track{height:14px;background:var(--sunk);border-radius:7px;overflow:hidden}
+.bar .fill{display:block;height:100%;background:var(--accent);border-radius:7px}
+.bar .fill.minor{background:var(--sun)}
+.bar .fill.gone{background:var(--line)}
+.opt{display:flex;gap:12px;align-items:flex-start;text-align:left;width:100%;background:var(--surface);border:2px solid var(--line);border-radius:12px;padding:12px}
+.opt.sel{border-color:var(--accent);background:var(--good-soft)}
+.opt .stack{gap:2px}
+.opt .fx{font-size:.78rem;color:var(--accent);font-weight:700}
+
+/* budget */
+.coins{display:flex;gap:3px;flex-wrap:wrap}
+.coin{width:14px;height:14px;border-radius:50%;background:var(--sun);box-shadow:inset 0 -2px 0 rgba(0,0,0,.18)}
+.coin.ghost{background:transparent;box-shadow:inset 0 0 0 1.5px var(--line)}
+.brow{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;padding:6px 0;border-bottom:1px dashed var(--line)}
+.brow:last-child{border-bottom:0}
+.stepper{display:flex;align-items:center;gap:6px}
+.stepper button{width:36px;height:36px;border-radius:50%;border:2px solid var(--line);background:var(--surface);font-weight:800;font-size:1.1rem}
+.stepper .v{min-width:1.4em;text-align:center;font-family:var(--f-display);font-weight:800;font-size:1.2rem}
+.left{font-family:var(--f-display);font-weight:800}
+.prefs{display:flex;flex-direction:column;gap:4px;font-size:.84rem}
+
+/* votes */
+.vote{display:flex;gap:6px}
+.vote button{border:2px solid var(--line);background:var(--surface);border-radius:10px;padding:.35em .9em;font-family:var(--f-display);font-weight:800}
+.vote button.yes.sel{background:var(--good);border-color:var(--good);color:#fff}
+.vote button.no.sel{background:var(--bad);border-color:var(--bad);color:#fff}
+.who{display:flex;gap:4px;flex-wrap:wrap}
+.who span{font-size:.72rem;border-radius:6px;padding:.05em .45em;background:var(--sunk)}
+.who span.y{background:var(--good-soft);color:var(--good);font-weight:700}
+.who span.n{background:var(--bad-soft);color:var(--bad);font-weight:700}
+
+/* event */
+.event{background:var(--ink);color:var(--bg);border-radius:var(--r);padding:18px;display:flex;flex-direction:column;gap:10px}
+.event .kicker{font-size:.75rem;letter-spacing:.12em;font-weight:700;color:var(--sun)}
+.event h2{color:var(--bg)}
+.yakusoku{border:3px solid var(--sun);border-radius:12px;padding:12px;background:var(--sun-soft);display:flex;flex-direction:column;gap:8px}
+
+/* results */
+.fx-list{display:flex;flex-direction:column;gap:6px;margin:0;padding:0;list-style:none}
+.fx-list li{padding:8px 10px;border-radius:10px;background:var(--sunk);font-size:.88rem}
+.fx-list li.good{background:var(--good-soft)}
+.fx-list li.bad{background:var(--bad-soft)}
+.meter{display:grid;grid-template-columns:7.5em 1fr 3.4em;gap:8px;align-items:center;font-size:.86rem}
+.meter .track{height:12px;background:var(--sunk);border-radius:6px;overflow:hidden}
+.meter .fill{display:block;height:100%;border-radius:6px;background:var(--accent)}
+.delta{font-weight:700;font-size:.78rem}
+.delta.up{color:var(--good)} .delta.down{color:var(--bad)}
+.city{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;align-items:end;height:110px;padding-top:6px}
+.city .col{display:flex;flex-direction:column-reverse;gap:2px;align-items:center;height:100%}
+.city .blk{width:70%;height:7px;border-radius:2px}
+.city .lab{font-size:.7rem;color:var(--muted);text-align:center}
+.scene{display:block;width:100%;max-width:100%;height:auto;border-radius:12px;margin-bottom:6px}
+.event .scene{margin:0}
+.radar{width:100%;max-width:400px;margin:0 auto;display:block}
+
+/* footer bar */
+.bar-fixed{position:fixed;left:0;right:0;bottom:0;background:var(--surface);border-top:1px solid var(--line);padding:10px 16px calc(10px + env(safe-area-inset-bottom,0px));z-index:5}
+.bar-in{max-width:560px;margin:0 auto;display:flex;flex-direction:column;gap:8px}
+.seats{display:flex;gap:6px;flex-wrap:wrap}
+.seat{font-size:.75rem;border-radius:8px;padding:.2em .55em;background:var(--sunk);color:var(--muted);display:inline-flex;gap:.3em;align-items:center}
+.seat.ok{background:var(--good-soft);color:var(--good);font-weight:700}
+.seat.wait{background:var(--sun-soft);color:var(--ink)}
+.seat.you{box-shadow:inset 0 0 0 1.5px var(--accent)}
+.err{background:var(--bad-soft);color:var(--bad);border-radius:10px;padding:8px 12px;font-size:.88rem}
+.tag{font-size:.72rem;border-radius:6px;padding:.05em .45em;background:var(--sunk);color:var(--muted)}
+.hero{display:flex;flex-direction:column;gap:10px;padding-block:10px 4px}
+.hero .ey{font-size:.78rem;font-weight:700;letter-spacing:.1em;color:var(--accent)}
+.hero h1{font-size:2rem}
+details summary{cursor:pointer;font-weight:700;font-family:var(--f-display)}
+.rules{margin:8px 0 0;padding-left:1.2em;display:flex;flex-direction:column;gap:4px;font-size:.9rem}
+.switch{display:flex;gap:4px;flex-wrap:wrap}
+.switch button{border:2px solid var(--line);background:var(--surface);border-radius:8px;padding:.2em .6em;font-size:.82rem;font-weight:700}
+.switch button.on{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.rank{display:grid;grid-template-columns:2em 1fr auto;gap:8px;align-items:center;padding:8px 0;border-bottom:1px dashed var(--line)}
+.rank .pos{font-family:var(--f-display);font-weight:800;font-size:1.3rem;color:var(--accent)}
+.note{border-left:4px solid var(--accent);padding:4px 0 4px 12px;font-size:.9rem}
+/* 議場の声（ticker + bottom sheet） */
+.ticker{display:flex;align-items:center;gap:8px;width:100%;text-align:left;background:var(--sunk);border:0;border-radius:10px;padding:6px 10px;min-width:0}
+.ticker .lab{flex:none;font-family:var(--f-display);font-weight:800;font-size:.8rem;background:var(--accent);color:var(--accent-ink);border-radius:6px;padding:.05em .5em}
+.ticker .txt{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:.86rem}
+.ticker .unread{flex:none;background:var(--bad);color:#fff;border-radius:999px;font-size:.72rem;font-weight:700;padding:0 .5em}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:10;background:var(--surface);border-top:2px solid var(--accent);border-radius:16px 16px 0 0;box-shadow:0 -8px 30px rgba(0,0,0,.18);padding:12px 16px calc(12px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:10px;max-height:78vh}
+.sheet-in{max-width:560px;width:100%;margin:0 auto;display:flex;flex-direction:column;gap:10px;min-height:0}
+.talk-list{overflow-y:auto;display:flex;flex-direction:column;gap:8px;min-height:120px;max-height:40vh;padding:2px}
+.msg{display:flex;flex-direction:column;gap:2px;max-width:85%}
+.msg .who{font-size:.72rem;color:var(--muted);font-weight:700}
+.msg .say{background:var(--sunk);border-radius:4px 14px 14px 14px;padding:7px 11px;font-size:.92rem;overflow-wrap:anywhere}
+.msg.mine{align-self:flex-end;align-items:flex-end}
+.msg.mine .say{background:var(--accent);color:var(--accent-ink);border-radius:14px 4px 14px 14px}
+.msg.mayor .say{box-shadow:inset 0 0 0 2px var(--sun)}
+.msg.npc .say{border:1.5px dashed var(--muted)}
+.msg.sys{align-self:center;max-width:100%}
+.msg.sys .say{background:transparent;color:var(--muted);font-size:.78rem;padding:0}
+.chips{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px}
+.chips button{flex:none;border:2px solid var(--line);background:var(--surface);border-radius:999px;padding:.3em .8em;font-size:.84rem;white-space:nowrap}
+.compose{display:flex;gap:8px}
+.compose input{flex:1;min-width:0}
+.compose .btn{flex:none;white-space:nowrap}
+.reason{font-size:.86rem;background:var(--sun-soft);border-radius:8px;padding:6px 10px}
+.amlist{display:flex;flex-direction:column;gap:8px}
+.era{border-radius:12px;padding:10px 14px;display:flex;flex-direction:column;gap:2px;background:var(--sunk);border:2px dashed var(--line)}
+.era b{font-family:var(--f-display);font-size:1.05rem}
+.era.digital{background:var(--good-soft);border:2px solid var(--accent)}
+.era.mix{background:var(--sun-soft);border:2px solid var(--sun)}
+.missed{display:grid;grid-template-columns:1fr;gap:8px}
+.missed .voice{border-left:4px solid var(--bad)}
+.missed .why{display:block;font-size:.75rem;color:var(--bad);font-weight:700;margin-top:2px}
+.heard{display:grid;grid-template-columns:4.5em 1fr 3.4em;gap:8px;align-items:center;font-size:.86rem}
+.heard .track{height:22px;background:var(--sunk);border-radius:6px;overflow:hidden}
+.heard .fill{display:block;height:100%;background:var(--accent)}
+.op{display:flex;gap:6px;flex-wrap:wrap}
+.op button{flex:1 1 auto;border:2px solid var(--line);background:var(--surface);border-radius:10px;padding:.5em .6em;font-weight:700;font-size:.88rem}
+.op button.sel{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+@media (prefers-reduced-motion:no-preference){.pop{animation:pop .35s ease-out}@keyframes pop{from{transform:scale(.97);opacity:.6}to{transform:none;opacity:1}}}
+
+.qrbox{display:flex;gap:14px;align-items:center;flex-wrap:wrap;background:var(--sunk);border-radius:12px;padding:12px}
+.qr{background:#fff;padding:8px;border-radius:8px;line-height:0;flex:none}
+.qr img,.qr canvas{display:block}
+.url{overflow-wrap:anywhere;font-family:ui-monospace,Menlo,monospace}
+html{-webkit-text-size-adjust:100%}
+body{padding-top:env(safe-area-inset-top,0px)}
+</style>
+<script src="config.js"></script>
+<script src="vendor/supabase.js"></script>
+<script src="vendor/qrcode.js"></script>
+<script src="backend.js"></script>
+</head>
+<body>
+<div class="wrap" id="app">
+  <section class="hero">
+    <span class="ey">4人用 ・ スマホ4台 ・ 9さいから ・ 30〜40分</span>
+    <h1>デジタル<wbr>まちづくり議会</h1>
+    <p>読みこみ中…</p>
+  </section>
+</div>
+<div class="bar-fixed" id="bar" hidden></div>
+<div class="sheet" id="talk" hidden>
+  <div class="sheet-in">
+    <div class="row between"><h3>議場の声</h3><div class="row" style="gap:6px"><label class="row small" style="gap:4px"><input type="checkbox" id="tts"> 読み上げ</label><button class="btn ghost sm" data-act="closeTalk">とじる</button></div></div>
+    <div class="talk-list" id="talk-list" aria-live="polite"></div>
+    <div id="talk-compose" class="stack" style="gap:8px">
+      <div class="chips" id="talk-chips"></div>
+      <form class="compose" id="talk-form"><input type="text" id="talk-input" maxlength="60" placeholder="発言する（60字まで）" autocomplete="off"><button class="btn" type="submit">言う</button></form>
+    </div>
+  </div>
+</div>
+
+<script>
+(() => {
+'use strict';
+/* ───────── ゲームデータ ───────── */
+const CATS = [
+  {id:'school', name:'学校・子育て', mark:'学'},
+  {id:'care',   name:'病院・福祉',   mark:'医'},
+  {id:'road',   name:'道路・防災',   mark:'道'},
+  {id:'park',   name:'公園・環境',   mark:'緑'},
+  {id:'tax',    name:'減税',         mark:'税'},
+];
+const CAT = Object.fromEntries(CATS.map(c=>[c.id,c]));
+const GROUPS = [
+  {id:'family', name:'子育て家族', w:{school:1, park:.5}},
+  {id:'elder',  name:'お年寄り', w:{care:1, road:.5}},
+  {id:'shop',   name:'商店街・はたらく人', w:{tax:1, road:.5}},
+  {id:'youth',  name:'中高生・若者', w:{park:1, school:.5}},
+  {id:'minor',  name:'車いすの人・外国から来た家族', w:{care:.5, road:.5, school:.5}},
+];
+const GR = Object.fromEntries(GROUPS.map(g=>[g.id,g]));
+const SEATS = ['mayor','c1','c2','c3'];
+const SEATINFO = {
+  mayor:{short:'市長', label:'市長', group:null},
+  c1:{short:'議員A', label:'議員A（子育て家族の代表）', group:'family'},
+  c2:{short:'議員B', label:'議員B（お年寄りの代表）', group:'elder'},
+  c3:{short:'議員C', label:'議員C（商店街の代表）', group:'shop'},
+};
+const COUNCIL = ['c1','c2','c3'];
+const VOICES = {
+  1:{family:300, elder:290, shop:240, youth:120, minor:50},
+  2:{family:270, elder:320, shop:230, youth:130, minor:50},
+  3:{family:290, elder:300, shop:210, youth:150, minor:50},
+};
+const QUOTES = {
+  family:['保育園に入れなくて仕事にもどれない','通学路に歩道がなくてこわい'],
+  elder:['バスがへって病院に行けない','近くに診療所がほしい'],
+  shop:['税金が高くて店をつづけるのが大変','駅前の道をきれいにしてほしい'],
+  youth:['放課後に集まれる場所がない','公園でボール遊びができない'],
+  minor:['駅にエレベーターがなくて出かけられない','学校のお知らせが日本語だけで読めない'],
+};
+const HALL = {elder:20, shop:14, family:7, youth:1, minor:0};
+const MISSED = [
+  {g:'family', q:'保育園に入れなくて仕事にもどれない', why:'夜7時は子どもの寝かしつけで行けなかった'},
+  {g:'youth', q:'放課後に集まれる場所がない', why:'部活と塾で行けなかった。説明会があることも知らなかった'},
+  {g:'minor', q:'駅にエレベーターがなくて出かけられない', why:'公民館の2階に上がる方法がなかった'},
+  {g:'minor', q:'学校のお知らせが日本語だけで読めない', why:'説明会のチラシが日本語だけだった'},
+  {g:'shop', q:'駅前の道をきれいにしてほしい', why:'お店をしめる時間と重なった'},
+];
+const ERAS = {
+  1:{cls:'', t:'1年目：対面だけの年', s:'スマホもAIもまだ使わない。市民の声は、平日夜7時に公民館で聞く。'},
+  2:{cls:'digital', t:'2年目：デジタル解禁！', s:'市民1000人の声がスマホでとどく。AIで整理したり、オンラインで投票したりできる。'},
+  3:{cls:'mix', t:'3年目：対面とデジタルを組み合わせる', s:'新しい決め方「ハイブリッド会議」が使えるようになった。'},
+};
+const AIMODES = {
+  hall:{name:'公民館で聞いた声でまとめる', desc:'その場に来た人の話を、市長が直接聞いた。', fx:'来られなかった人の声はとどかない'},
+  major:{name:'多い意見だけまとめる', desc:'速くてわかりやすい。でも少ない意見は「その他」に入って見えなくなる。', fx:'少ない声 −8 ・ 若者 −3'},
+  all:{name:'少ない意見ものこしてまとめる', desc:'少し長くなるけど、5%しかない声も見える。', fx:'少ない声 +3 ・ 多元 +1'},
+  read:{name:'AIを使わず、職員が全部読む', desc:'1000件を読むのに約33時間。残業代で今年の予算が1コインへる。', fx:'予算 9コイン ・ 信頼 +1 ・ 少ない声 +3'},
+};
+const METHODS = {
+  hall:{name:'公民館の集会で手をあげて決める', model:'直接（対面）', mark:'手', desc:'来た人みんなで手をあげて多数決。顔が見えて納得しやすい。でも来た人のほとんどはお年寄りと商店街の人。', fx:'信頼 +1 ・ 来た人の多数派の予算 +1コイン'},
+  hybrid:{name:'ハイブリッド会議', model:'熟議＋参加', mark:'和', desc:'公民館に集まる人と、スマホから参加する人がいっしょに話す。AIが意見を整理し、手話や外国語の字幕もつく。会場代で1コイン。', fx:'信頼 +2 ・ 少ない声 +10 ・ 若者 +6 ・ 投票率 +6 ・ 予算 −1コイン'},
+  rep:{name:'議会で決める', model:'代表', mark:'代', desc:'えらばれた議員が決める。早くて安定。でも市民は「遠いところで決まった」と感じるかも。', fx:'投票率 −3'},
+  direct:{name:'オンライン市民投票', model:'直接', mark:'直', desc:'市民みんながスマホで投票。いちばん多い意見が勝つ。若者はあまり投票しない。', fx:'投票率 +10 ・ 信頼 +1 ・ 多数派の予算 +1コイン'},
+  delib:{name:'AIつき市民討論会', model:'熟議', mark:'話', desc:'AIが意見を整理し、くじで選ばれた市民がじっくり話し合う。会場代で1コインかかる。', fx:'信頼 +2 ・ 少ない声 +5 ・ 予算 −1コイン'},
+  partic:{name:'みんなでつくる予算', model:'参加', mark:'参', desc:'市民がアイデアを出して投票し、1コインを市民の提案に使う。', fx:'投票率 +8 ・ 若者 +8 ・ 1コインを市民提案へ'},
+  plural:{name:'当事者もいっしょの会議', model:'多元', mark:'多', desc:'人数が少ないグループの代表も、同じテーブルで話す。', fx:'少ない声 +12 ・ 信頼 +1'},
+};
+const EVENTS = {
+  sns:{title:'SNSで「#その予算いらない」が大流行', body:'「車いすの人や外国から来た家族のための予算はムダ。減税にまわせ！」という投稿が一晩で10万回シェアされた。'},
+  rain:{title:'記録的な大雨', body:'川があふれそうになり、道路が水につかった。'},
+  fake:{title:'デマが広がった', body:'「市民病院がなくなるらしい」というウソの情報がチャットで広がっている。市長はどうする？'},
+  fatigue:{title:'「また投票？」', body:'スマホに投票のお知らせが毎週とどく。市民はちょっとつかれてきた。'},
+  aimiss:{title:'AI要約のかたよりが発覚', body:'新聞が「市のAI要約は少ない意見を消していた」と報道した。'},
+  generation:{title:'世代で意見がまっぷたつ', body:'若者は「公園とスポーツ広場」、お年寄りは「病院とバス」。ネットで言い合いになっている。'},
+};
+const FAKE_OPTS = {
+  fact:{name:'すぐに正しい情報を公式に出す', fx:'信頼 +1 ・ 代表 +1'},
+  talk:{name:'市民といっしょに事実をたしかめる会をひらく', fx:'信頼 +1 ・ 熟議 +1'},
+  ignore:{name:'放っておく', fx:'信頼 −2 ・ お年寄り −8'},
+};
+const REASONS = {
+  family:['保育園をふやしたい','通学路を安全にしたい','子どもの遊び場がほしい'],
+  elder:['病院へのバスをふやしたい','近くに診療所がほしい','段差のない道にしたい'],
+  shop:['お店の税金を下げたい','駅前の道を直したい','お客さんがふえるまちに'],
+};
+const MODELS = [
+  {id:'const', name:'まちの約束', sub:'立憲'},
+  {id:'rep', name:'代表', sub:'代表'},
+  {id:'direct', name:'みんなで投票', sub:'直接'},
+  {id:'plural', name:'少ない声', sub:'多元'},
+  {id:'delib', name:'話し合い', sub:'熟議'},
+  {id:'partic', name:'みんなで参加', sub:'参加'},
+];
+function methodsFor(yr){ return yr===1 ? ['rep','hall'] : yr===2 ? ['rep','direct','delib','partic','plural'] : ['hybrid','rep','direct','delib','partic','plural']; }
+function aiModesFor(yr){ return yr===1 ? ['hall'] : ['major','all','read']; }
+const HEARD = {hall:42, major:830, all:1000, read:1000};
+const OPINION_Q = 'まちのことは、顔を合わせて話すだけで決めるのがいちばんいい。';
+const OPINIONS = [['agree','そう思う'],['mid','どちらともいえない'],['disagree','そう思わない']];
+const PHASES = [
+  ['voices','声'],['budget','予算案'],['amend','修正'],['amendVote','採決'],['method','決め方'],['event','できごと'],['result','結果']
+];
+const YEARS = 3;
+
+/* ───────── ユーティリティ ───────── */
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const clone = o => JSON.parse(JSON.stringify(o ?? {}));
+const clamp = (v,a,b) => Math.max(a, Math.min(b, v));
+const sum = o => Object.values(o||{}).reduce((a,b)=>a+(+b||0),0);
+const isObj = v => v && typeof v === 'object' && !Array.isArray(v);
+function deepMerge(t, p){ for (const k in p){ if (isObj(p[k]) && isObj(t[k])) deepMerge(t[k], p[k]); else t[k] = clone(p[k]); } return t; }
+function shuffle(a){ a=a.slice(); for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; }
+const ls = {get(k){try{return localStorage.getItem(k)}catch{return null}}, set(k,v){try{localStorage.setItem(k,v)}catch{}}};
+const sgn = n => (n>0?'+':'')+n;
+
+/* ───────── 接続まわり ───────── */
+let db=null, user=null, uid=null, capsReady=false;
+let mode=null;          // 'online' | 'local'
+let code=null, ref=null, unsub=null, S=null;
+let localSeat='mayor';
+let spectator=false;
+let errMsg='';
+let writeQ = Promise.resolve();
+let draft = {key:'', budget:null, amend:{from:'tax', to:'school', amt:1, reason:''}};
+let endOpen = false; let backendLabel = '';
+let chat = [], chatUnsub = null, talkOpen = false, seenCount = 0, lastSend = 0, spoken = new Set(), chatReady = false;
+let startView = {nick: ls.get('machi.nick')||'', join:'', joinDoc:null, busy:false, msg:''};
+
+function write(patch){
+  if (mode==='local'){ deepMerge(S, patch); render(); return Promise.resolve(); }
+  writeQ = writeQ.then(()=>ref.update(patch)).catch(e=>{ errMsg = '通信できませんでした。電波を確かめて、もう一度おしてください。'; render(); });
+  return writeQ;
+}
+function mySeat(){
+  if (mode==='local') return localSeat;
+  if (!S || spectator) return null;
+  return SEATS.find(s => S.seats?.[s] === uid) || null;
+}
+function isHost(){ return mode==='local' || mySeat()==='mayor'; }
+function present(){ return SEATS.filter(s => S.seats?.[s]); }
+function nameOf(s){ const n = S?.names?.[s]; return n ? `${SEATINFO[s].short}・${n}` : SEATINFO[s].short; }
+
+function newGameState(hostId, nick){
+  const first = shuffle(['rain','fake','generation'])[0];
+  const later = shuffle(['rain','fake','generation','fatigue','aimiss'].filter(e=>e!==first))[0];
+  const deck = [first, ...shuffle(['sns', later])];
+  return {
+    v:1, code, phase:'lobby', year:0, created:Date.now(),
+    seats:{mayor:hostId}, names:{mayor:nick},
+    support:{family:50, elder:50, shop:50, youth:40, minor:40},
+    meters:{trust:5, turnout:45},
+    stats:{uses:{rep:0,direct:0,delib:0,partic:0,plural:0,hall:0,hybrid:0}, aiInclusive:0, aiReadAll:0, passedAmends:0, checksBlocked:0, rightsViolations:0, delibBonus:0, repBonus:0},
+    invest:{school:0,care:0,road:0,park:0,tax:0},
+    checkUsed:{}, bonus:{}, deck, years:{}, last:null, opinion:{pre:{}, post:{}},
+  };
+}
+
+/* ───────── フェーズ進行（市長の端末が計算） ───────── */
+function Y(){ return S.years?.[S.year] || {}; }
+function totalCoins(y){ return y.aiMode==='read' ? 9 : 10; }
+
+function tallyAmends(){
+  const y = Y(); const b = clone(y.budget); const pres = present();
+  const need = Math.floor(pres.length/2)+1; const passed=[], rejected=[];
+  for (const s of COUNCIL){
+    const a = y.amends?.[s]; if (!a || a.none) continue;
+    let yes = 1;
+    for (const v of pres){ if (v!==s && y.avotes?.[s]?.[v]===true) yes++; }
+    if (yes>=need && (b[a.from]||0) >= a.amt){ b[a.from]-=a.amt; b[a.to]+=a.amt; passed.push(s); } else rejected.push(s);
+  }
+  return {b, passed, rejected, need};
+}
+function tallyMethod(){
+  const y = Y(); const cnt = {};
+  for (const s of present()){ const m = y.mvotes?.[s]; if (m) cnt[m]=(cnt[m]||0)+1; }
+  const max = Math.max(0, ...Object.values(cnt));
+  if (!max) return {method: S.year===1 ? 'hall' : 'rep', cnt};
+  const tied = Object.keys(cnt).filter(k=>cnt[k]===max);
+  const mv = y.mvotes?.mayor;
+  return {method: tied.includes(mv) ? mv : tied[0], cnt};
+}
+function largestCat(b, except){ return CATS.map(c=>c.id).filter(c=>c!==except).sort((a,z)=>(b[z]||0)-(b[a]||0))[0]; }
+function applyMethod(b, method){
+  b = clone(b); const notes=[];
+  if (method==='direct' || method==='hall'){
+    const v = method==='hall' ? HALL : VOICES[S.year]; const big = Object.keys(v).sort((a,z)=>v[z]-v[a])[0];
+    const target = Object.keys(GR[big].w).find(c=>GR[big].w[c]===1);
+    let from = (b.park>0 && target!=='park') ? 'park' : largestCat(b, target);
+    if (b[from]>0){ b[from]--; b[target]++; notes.push(`${method==='hall'?'集会':'市民投票'}で多数派（${GR[big].name}）の「${CAT[target].name}」に1コイン移った（${CAT[from].name}から）`); }
+  }
+  if (method==='delib' || method==='partic' || method==='hybrid'){
+    const from = largestCat(b); if (b[from]>0){ b[from]--; notes.push(method!=='partic' ? `会議の会場代で「${CAT[from].name}」から1コイン使った` : `「${CAT[from].name}」から1コインを市民の提案（放課後の秘密基地づくり）に使った`); }
+  }
+  return {b, notes};
+}
+
+function next(){
+  if (!isHost() || !S) return;
+  const ph = S.phase, yr = S.year;
+  if (ph==='lobby') return go({phase:'voices', year:1, years:{1:{}}});
+  if (ph==='voices'){ if (!Y().aiMode) return; return go({phase:'budget'}); }
+  if (ph==='budget'){ if (!Y().budget) return; return go({phase:'amend'}); }
+  if (ph==='amend'){
+    const has = COUNCIL.some(s=>Y().amends?.[s] && !Y().amends[s].none);
+    if (!has){ const t = tallyAmends(); return go({phase:'method', years:{[yr]:{afterAmend:t.b, passed:[], rejected:[]}}}); }
+    return go({phase:'amendVote'});
+  }
+  if (ph==='amendVote'){ const t = tallyAmends(); return go({phase:'method', years:{[yr]:{afterAmend:t.b, passed:t.passed, rejected:t.rejected}}}); }
+  if (ph==='method'){
+    const {method} = tallyMethod(); const r = applyMethod(Y().afterAmend || Y().budget, method);
+    return go({phase:'event', years:{[yr]:{method, finalBudget:r.b, methodNotes:r.notes, event:S.deck[yr-1]}}});
+  }
+  if (ph==='event'){ const p = resolveYear(); p.phase='result'; return go(p); }
+  if (ph==='result'){
+    if (yr>=YEARS) return go({phase:'final'});
+    return go({phase:'voices', year:yr+1, years:{[yr+1]:{}}});
+  }
+}
+
+/* ───────── NPC（コンピューターの議員） ───────── */
+const NPCNAMES = {c1:'NPCはな', c2:'NPCげん', c3:'NPCまさ'};
+const NPCPREF = {
+  family:['hybrid','partic','delib','hall','rep','plural','direct'],
+  elder:['hall','hybrid','delib','rep','plural','direct','partic'],
+  shop:['rep','hybrid','direct','hall','delib','partic','plural'],
+};
+const isNpc = (st, s) => st.seats?.[s]==='npc';
+const pick = a => a[Math.floor(Math.random()*a.length)];
+function npcPatch(st, only){
+  const patch = {}, says = [], yr = st.year, y = st.years?.[yr] || {}, ph = st.phase;
+  const npcs = COUNCIL.filter(s=>isNpc(st,s) && (!only || s===only));
+  const put = (field, seat, val) => { deepMerge(patch, {years:{[yr]:{[field]:{[seat]:val}}}}); };
+  for (const s of npcs){
+    const g = SEATINFO[s].group, w = GR[g].w;
+    const want = Object.keys(w).find(c=>w[c]===1);
+    if (ph==='amend' && !y.amends?.[s] && y.budget){
+      const b = y.budget;
+      const from = CATS.map(c=>c.id).filter(c=>!w[c] && b[c]>0).sort((a,z)=>b[z]-b[a])[0];
+      if (!from || b[want]>=4){ put('amends', s, {none:true}); says.push([s,'市長の予算案でいいと思います。']); }
+      else { const reason = pick(REASONS[g]); put('amends', s, {from, to:want, amt:1, none:false, reason}); says.push([s, `${CAT[from].name}を1へらして、${CAT[want].name}にまわしたい。${reason}から！`]); }
+    }
+    if (ph==='amendVote'){
+      const props = COUNCIL.filter(p=>p!==s && y.amends?.[p] && !y.amends[p].none && y.avotes?.[p]?.[s]===undefined);
+      const parts=[];
+      for (const p of props){
+        const a = y.amends[p]; const sc = (w[a.to]||0) - (w[a.from]||0);
+        const yes = sc>0 ? true : sc<0 ? false : Math.random()<.5;
+        deepMerge(patch, {years:{[yr]:{avotes:{[p]:{[s]:yes}}}}});
+        parts.push(`${SEATINFO[p].short}の案に${yes?'賛成':'反対'}`);
+      }
+      if (parts.length) says.push([s, parts.join('、')+'します。']);
+    }
+    if (ph==='method' && !y.mvotes?.[s]){
+      const avail = methodsFor(yr); const m = NPCPREF[g].find(x=>avail.includes(x)) || avail[0];
+      put('mvotes', s, m); says.push([s, `「${METHODS[m].name}」がいいと思う。`]);
+    }
+    if (ph==='event' && y.event==='sns' && y.method==='direct' && !st.checkUsed?.[s] && !y.checks?.[s]){
+      if (Math.random() < .5){ deepMerge(patch, {years:{[yr]:{checks:{[s]:true}}}, checkUsed:{[s]:true}}); says.push([s,'まちの約束カードを出します！ 多数決でも、だれかの権利はうばえない。']); }
+      else says.push([s,'うーん…わたしの支持者は減税がうれしいみたい。カードは出さないでおこう。']);
+    }
+  }
+  return {patch, says};
+}
+function npcSay(seat, text){
+  const m = {seat, text, t:Date.now(), y:S?.year||0, ph:S?.phase||'', npc:true};
+  if (mode==='local'){ m.id='n'+chat.length+'-'+Math.random().toString(36).slice(2,6); chat.push(m); spoken.add(m.id); renderTalk(); return; }
+  db.collection('games/'+code+'/chat').add(m).catch(()=>{});
+}
+function go(p){
+  const tmp = deepMerge(clone(S), p);
+  const r = npcPatch(tmp);
+  deepMerge(p, r.patch);
+  const done = write(p);
+  r.says.forEach(([seat,t],i)=>setTimeout(()=>npcSay(seat,t), 600+i*900));
+  return done;
+}
+function setNpc(seat, on){
+  if (!COUNCIL.includes(seat)) return;
+  if (!isHost() && !(on && mySeat()===seat)) return;
+  if (on){
+    const p = {seats:{[seat]:'npc'}, names:{[seat]:NPCNAMES[seat]}};
+    const tmp = deepMerge(clone(S), p); const r = npcPatch(tmp, seat); deepMerge(p, r.patch);
+    write(p); npcSay(seat, `${NPCNAMES[seat]}です。${GR[SEATINFO[seat].group].name}の代表としてがんばります！`);
+    r.says.forEach(([s2,t],i)=>setTimeout(()=>npcSay(s2,t), 900+i*900));
+  } else if (mode==='local') write({seats:{[seat]:'local-'+seat}, names:{[seat]:''}});
+  else write({seats:{[seat]:null}, names:{[seat]:null}});
+  if (on && mode==='local' && localSeat===seat) localSeat='mayor';
+}
+function resolveYear(){
+  const yr=S.year, y=Y(), fb=clone(y.finalBudget), m=y.method, ev=y.event;
+  const sup=clone(S.support), met=clone(S.meters), st=clone(S.stats), inv=clone(S.invest), bonus=clone(S.bonus);
+  const d={family:0,elder:0,shop:0,youth:0,minor:0}; let dTrust=0, dTurn=0; const notes=[];
+  const N=(t,k='info')=>notes.push({t,k});
+
+  // 1. 予算の効果
+  for (const g of GROUPS){
+    let score=0; for (const c in g.w) score += (fb[c]||0)*g.w[c];
+    d[g.id] += Math.round((score-2.5)*8);
+  }
+  for (const c of CATS) inv[c.id] += (fb[c.id]||0);
+  N('予算が実行された。それぞれのグループの満足度が変わった。');
+  st.passedAmends += (y.passed||[]).length;
+
+  // 2. AIの使い方
+  if (y.aiMode==='hall'){ d.family-=6; d.youth-=8; d.minor-=12; d.elder+=3; d.shop+=2; N('公民館に来られた42人の声だけで決めた。来られなかった子育て家族・若者・車いすの人や外国から来た家族の声はとどかなかった','bad'); }
+  if (y.aiMode==='major'){ d.minor-=8; d.youth-=3; N('AIが多い意見だけをまとめたので、少ない声がとどかなかった','bad'); }
+  if (y.aiMode==='all'){ d.minor+=3; st.aiInclusive++; N('AIが少ない意見ものこしたので、車いすの人や外国から来た家族の声もとどいた','good'); }
+  if (y.aiMode==='read'){ d.minor+=3; dTrust+=1; st.aiReadAll++; N('職員が全部読んだので「ちゃんと聞いてくれた」と信頼が上がった（でも予算は1コインへった）','good'); }
+
+  // 3. 決め方
+  st.uses[m] = (st.uses[m]||0)+1;
+  (y.methodNotes||[]).forEach(t=>N(t));
+  if (m==='hall'){ dTrust+=1; dTurn-=2; N('集会に来た人は「顔を見て決めた」と納得した。でも参加したのは市民の4%だけ'); }
+  if (m==='hybrid'){ dTrust+=2; d.minor+=10; d.youth+=6; d.family+=4; dTurn+=6; N('公民館とスマホの両方から参加できた。顔を合わせる安心感と、来られない人の声の両方がそろった','good'); }
+  if (m==='rep'){ dTurn-=3; N('議会で決めたので早く決まった。でも投票率は少し下がった'); }
+  if (m==='direct'){ dTurn+=10; dTrust+=1; d.youth-=5; N('オンライン市民投票で投票率アップ！ でも若者はあまり投票しなかった','good'); }
+  if (m==='delib'){ dTrust+=2; d.minor+=5; dTurn+=3; N('市民討論会で、ちがう意見の人どうしがじっくり話した。信頼アップ','good'); }
+  if (m==='partic'){ dTurn+=8; d.youth+=8; d.family+=3; dTrust+=1; N('市民の提案が予算になった！ 若者がまちづくりに参加しはじめた','good'); }
+  if (m==='plural'){ d.minor+=12; dTrust+=1; dTurn+=3; N('当事者の会議で、少ないグループの声が予算に反映された','good'); }
+
+  // 4. できごと
+  const checks = Object.keys(y.checks||{}).filter(s=>y.checks[s]);
+  if (ev==='sns'){
+    if (m==='direct'){
+      if (checks.length){
+        st.checksBlocked++; d.minor+=5;
+        N(`${checks.map(nameOf).join('・')}が「まちの約束カード」を出した。だれかの権利をうばう投票は、多数決でもできない！`,'good');
+        for (const s of checks){ bonus[s]=(bonus[s]||0)+10; const g=SEATINFO[s].group; if (g){ d[g]-=5; N(`${nameOf(s)}の支持者の一部は「なぜ止めた」と不満`,'bad'); } else { dTrust-=1; } }
+      } else {
+        st.rightsViolations++; d.minor-=25; dTrust-=1;
+        N('市民投票で「少数グループの予算をやめる」が多数で決まってしまった。車いすの人や外国から来た家族の生活がきびしくなった','bad');
+      }
+    } else if (m==='delib' || m==='plural' || m==='hybrid'){
+      st.delibBonus++; N('話し合いの場があったので、SNSの声だけで決まらず、落ちついて考えられた','good');
+    } else { d.minor-=10; dTrust-=1; N('SNSの声が大きくなり、少ない声がさらに小さくなった','bad'); }
+  }
+  if (ev==='rain'){
+    if ((fb.road||0)>=3){ dTrust+=1; N('道路・防災にお金を使っていたので、被害は小さかった','good'); }
+    else { d.shop-=8; d.elder-=8; dTrust-=1; N('道路・防災のお金が足りず、お店やお年寄りの家が被害を受けた','bad'); }
+  }
+  if (ev==='fake'){
+    const c = y.eventChoice || 'ignore';
+    if (c==='fact'){ dTrust+=1; st.repBonus++; N('市が正しい情報をすぐ出したので、デマは止まった','good'); }
+    if (c==='talk'){ dTrust+=1; st.delibBonus++; N('市民といっしょに事実をたしかめ、デマを信じる人がへった','good'); }
+    if (c==='ignore'){ dTrust-=2; d.elder-=8; N('デマを放っておいたので、お年寄りが不安になった','bad'); }
+  }
+  if (ev==='fatigue'){
+    if ((st.uses.direct||0)>0){ dTurn-=10; N('何度もオンライン投票をしたので「もうつかれた」と投票率が下がった','bad'); }
+    else { dTurn+=5; N('ひさしぶりの投票なので、市民の関心が高まった','good'); }
+  }
+  if (ev==='aimiss'){
+    if (S.years && Object.values(S.years).some(v=>v.aiMode==='major')){ d.minor-=10; dTrust-=2; N('「多い意見だけ」でまとめていたことがバレて、信頼が下がった','bad'); }
+    else { dTrust+=1; st.aiInclusive++; N('この市は少ない意見ものこしていたので、むしろ信頼が上がった','good'); }
+  }
+  if (ev==='generation'){
+    if (m==='delib' || m==='plural' || m==='hybrid'){ dTrust+=1; d.youth+=8; N('世代のちがう人が同じ場で話し、おたがいの事情がわかった','good'); }
+    else { dTrust-=1; d.youth-=8; N('言い合いのまま決まり、若者は「どうせ聞いてもらえない」と感じた','bad'); }
+  }
+
+  for (const g in sup) sup[g] = clamp(sup[g]+d[g], 0, 100);
+  met.trust = clamp(met.trust+dTrust, 0, 10);
+  met.turnout = clamp(met.turnout+dTurn, 10, 90);
+  const heard = HEARD[y.aiMode] ?? 0;
+  return {support:sup, meters:met, stats:st, invest:inv, bonus, last:{year:yr, d, dTrust, dTurn, notes}, years:{[yr]:{heard}}};
+}
+
+function calcDDS(){
+  const st=S.stats, u=st.uses, c=v=>clamp(v,0,5);
+  return {
+    const: c(2 + 2*st.checksBlocked - 2*st.rightsViolations + (S.support.minor>=50?1:0)),
+    rep: c(2*u.rep + Math.min(2, st.passedAmends) + st.repBonus),
+    direct: c(2*u.direct + (u.hall||0) + (S.meters.turnout>=50?1:0)),
+    plural: c(2*u.plural + (u.hybrid||0) + st.aiInclusive + (S.support.minor>=50?1:0)),
+    delib: c(2*u.delib + 2*(u.hybrid||0) + st.aiReadAll + st.delibBonus),
+    partic: c(2*u.partic + (u.hybrid||0) + (S.meters.turnout>=55?1:0)),
+  };
+}
+function finalScores(){
+  const dds=calcDDS(); const ok=Object.values(dds).filter(v=>v>=2).length;
+  let city = ok*3; const lost = S.support.minor<30; if (lost) city-=15;
+  const rows = present().map(s=>{
+    let personal, reelect, why;
+    if (s==='mayor'){ personal = S.meters.trust*5 + Math.round(S.meters.turnout/2); reelect = S.meters.trust>=6 && S.meters.turnout>=40; why=`信頼 ${S.meters.trust}/10 ・ 投票率 ${S.meters.turnout}%`; }
+    else { const g=SEATINFO[s].group; personal = S.support[g]; reelect = personal>=50; why=`${GR[g].name}の支持 ${personal}`; }
+    const b = S.bonus?.[s]||0;
+    return {s, personal, bonus:b, city, total: personal+b+city, reelect, why};
+  }).sort((a,z)=>z.total-a.total);
+  return {rows, dds, ok, city, lost};
+}
+
+/* ───────── 描画 ───────── */
+function render(){
+  const app=$('#app'), bar=$('#bar');
+  // 入力中の欄のフォーカスとカーソル位置を、描きなおしのあとも保つ
+  const ae = document.activeElement; const fid = ae && app.contains(ae) && ae.id ? ae.id : null;
+  const sel = fid && 'selectionStart' in ae ? [ae.selectionStart, ae.selectionEnd] : null;
+  if (!S){ bar.hidden=true; $('#talk').hidden=true; app.innerHTML = viewStart(); }
+  else {
+    const key = `${S.year}-${S.phase}`;
+    if (draft.key!==key){ draft.key=key; draft.budget=null; draft.amend={from:'tax',to:'school',amt:1,reason:''}; }
+    const watchExtra = spectator && !['lobby','result','final'].includes(S.phase) ? supportView(null) + cityView() : '';
+    app.innerHTML = viewHeader() + (errMsg?`<div class="err">${esc(errMsg)}</div>`:'') + viewPhase() + watchExtra + seatAdmin();
+    bar.hidden=false; bar.innerHTML = viewBar();
+    renderTalk();
+  }
+  drawQR();
+  if (fid){ const el=document.getElementById(fid); if (el){ el.focus({preventScroll:true}); if (sel) try{ el.setSelectionRange(sel[0], sel[1]); }catch{} } }
+}
+
+/* ───────── 議場の声 ───────── */
+function talkPhrases(me){
+  if (!me) return [];
+  const g = SEATINFO[me].group;
+  const base = ['賛成！','反対…','ちょっと待って、話し合おう','少ない声のことも考えて'];
+  if (me==='mayor') return ['みんなの意見を聞かせて','予算には限りがあります','その案なら賛成できる', ...base];
+  const want = Object.keys(GR[g].w).find(c=>GR[g].w[c]===1);
+  return [`${GR[g].name}は「${CAT[want].name}」にお金がほしい！`, 'あなたの案に賛成するから、わたしの案にも賛成して', 'その案、少し変えたら賛成する', ...base];
+}
+function lastMsgs(){ return chat.filter(m=>(m.t||0) >= (S?.created||0)).slice(-60); }
+function renderTalk(){
+  if (!S) return;
+  const me = mySeat(); const list = $('#talk-list'); const msgs = lastMsgs();
+  const atBottom = list.scrollHeight - list.scrollTop - list.clientHeight < 40;
+  list.innerHTML = msgs.length ? msgs.map(m=>{
+    if (m.seat==='sys') return `<div class="msg sys"><span class="say">${esc(m.text)}</span></div>`;
+    const mine = m.seat===me; const who = SEATINFO[m.seat] ? nameOf(m.seat) : '';
+    return `<div class="msg ${mine?'mine':''} ${m.seat==='mayor'?'mayor':''} ${m.npc?'npc':''}"><span class="who">${esc(who)}</span><span class="say">${esc(m.text)}</span></div>`;
+  }).join('') : '<p class="small muted">まだ発言はありません。下のボタンで、自分の考えをみんなに伝えよう。</p>';
+  if (atBottom || talkOpen) list.scrollTop = list.scrollHeight;
+  const canTalk = !!me;
+  $('#talk-compose').hidden = !canTalk;
+  const chips = talkPhrases(me);
+  const ck = chips.join('|');
+  if ($('#talk-chips').dataset.k !== ck){ $('#talk-chips').dataset.k = ck; $('#talk-chips').innerHTML = chips.map(p=>`<button type="button" data-act="say" data-v="${esc(p)}">${esc(p)}</button>`).join(''); }
+  $('#talk').hidden = !talkOpen;
+  if (talkOpen) seenCount = chat.length;
+}
+function speakNew(){
+  const box = $('#tts'); if (!box || !box.checked || !('speechSynthesis' in window)) return;
+  const me = mySeat();
+  for (const m of chat){
+    if (spoken.has(m.id)) continue; spoken.add(m.id);
+    if (m.seat===me || m.seat==='sys' || !chatReady) continue;
+    try{ const u = new SpeechSynthesisUtterance(`${SEATINFO[m.seat]?.short||''}。${m.text}`); u.lang='ja-JP'; u.rate=1.05; speechSynthesis.speak(u); }catch{}
+  }
+}
+async function say(text){
+  text = String(text||'').trim().slice(0,60); const me = mySeat();
+  if (!text || !me) return;
+  if (Date.now()-lastSend < 1200) return; lastSend = Date.now();
+  const m = {seat:me, text, t:Date.now(), y:S.year, ph:S.phase};
+  if (mode==='local'){ m.id = 'l'+chat.length; chat.push(m); spoken.add(m.id); renderTalk(); render(); return; }
+  try{ await db.collection('games/'+code+'/chat').add(m); }
+  catch(e){ errMsg='発言を送れませんでした。もう一度ためしてください。'; render(); }
+}
+function subscribeChat(c){
+  if (chatUnsub) chatUnsub();
+  chat=[]; chatReady=false; spoken=new Set(); seenCount=0;
+  chatUnsub = db.collection('games/'+c+'/chat').orderBy('t','desc').limit(60).onSnapshot(snap=>{
+    chat = snap.docs.map(d=>({id:d.id, ...d.data()})).filter(m=>(m.t||0) >= (S?.created||0)).reverse();
+    if (!chatReady){ chat.forEach(m=>spoken.add(m.id)); seenCount = chat.length; chatReady = true; }
+    speakNew(); if (S) { renderTalk(); $('#bar').innerHTML = viewBar(); }
+  }, ()=>{});
+}
+$('#talk-form').addEventListener('submit', e=>{ e.preventDefault(); const i=$('#talk-input'); say(i.value); i.value=''; });
+
+function viewStart(){
+  const online = db && uid && canWrite !== false;
+  const v = startView;
+  let join = '';
+  if (v.joinDoc){
+    const d=v.joinDoc; const free = COUNCIL.filter(s=>!d.seats?.[s]);
+    join = `<div class="stack"><p>部屋 <span class="code">${esc(d.code)}</span> に参加します。席をえらんでください。</p>
+      ${free.length? free.map(s=>`<button class="opt" data-act="claim" data-seat="${s}"><span class="mark mk-${s==='c1'?'school':s==='c2'?'care':'tax'}">${SEATINFO[s].short.slice(-1)}</span><span class="stack"><b>${esc(SEATINFO[s].label)}</b><span class="small muted">「${esc(GR[SEATINFO[s].group].name)}」の満足度を上げると再選できる</span></span></button>`).join('') : '<p class="muted">議員の席はうまっています。</p>'}
+      <button class="btn ghost sm" data-act="watch">見るだけで参加（プロジェクター用）</button></div>`;
+  }
+  return `<section class="hero">
+    <span class="ey">4人用 ・ スマホ4台 ・ 9さいから ・ 30〜40分 ・ アカウント不要</span>
+    <h1>デジタル<wbr>まちづくり議会</h1>
+    ${backendLabel?`<span class="tag">${esc(backendLabel)}</span>`:''}
+    ${heroScene()}
+    <p>1年目は、公民館で顔を合わせて決める。2年目からは、スマホとAIで市民1000人の声がとどく。3年目は、その2つをどう組み合わせる？ 市長1人と議員3人で、3年間まちの予算を決めよう。</p>
+  </section>
+  <section class="card">
+    <h2>あそびかた</h2>
+    <ol class="rules">
+      <li><b>声</b>：1年目は公民館に来た人の声だけ。2年目からは市民1000人の声がスマホでとどき、市長がAIのまとめ方をえらぶ。</li>
+      <li><b>予算案</b>：市長が10コインを5つの分野に分ける。</li>
+      <li><b>修正と採決</b>：議員は自分の支持グループのために修正案を出す。4人で投票し、3人が賛成すれば通る。話し合い・交渉OK！</li>
+      <li><b>決め方</b>：議会？ 市民投票？ 討論会？ みんなで決め方をえらぶ。</li>
+      <li><b>できごと</b>：SNSの炎上、デマ、大雨…。まちの約束カードで、だれかの権利をうばう決定を止められる（1人1回）。</li>
+      <li>3年たったら<b>選挙</b>。支持を集めた人と、まちの「デジタル民主主義スコア」で勝負。</li>
+    </ol>
+  </section>
+  <section class="card">
+    <h2>オンラインで遊ぶ</h2>
+    ${online ? `
+      <label class="stack" style="gap:4px"><span class="small muted">ニックネーム（ゲームの中だけで使います）</span>
+      <input type="text" id="nick" maxlength="10" value="${esc(v.nick)}" placeholder="例：はるか"></label>
+      <button class="btn wide" data-act="create" ${v.busy?'disabled':''}>部屋をつくる（市長になる）</button>
+      <div class="row" style="flex-wrap:nowrap"><input type="text" id="joincode" inputmode="numeric" maxlength="4" placeholder="部屋コード4けた" value="${esc(v.join)}"><button class="btn ghost" data-act="find" ${v.busy?'disabled':''}>参加</button></div>
+      ${v.msg?`<div class="err">${esc(v.msg)}</div>`:''}
+      ${join}
+    ` : capsReady ? `<div class="err">${esc(capWhy||'オンラインにつながりませんでした。')}</div>
+      <p class="small">次のことをためしてください。</p>
+      <ol class="rules small"><li>インターネットにつながっているか確かめる。</li><li>係の人は、config.js の Supabase の設定と、supabase.sql を実行したかを確かめる。</li></ol>
+      <button class="btn ghost" data-act="retry">もう一度つなぐ</button>` : '<p class="muted">接続を確認しています…</p>'}
+  </section>
+  ${db ? watchSection() : ''}
+  <section class="card">
+    <h2>1台で練習する</h2>
+    <p class="small muted">イベント前のリハーサル用。1台で市長と議員3人を切りかえながら進めます。保存はされません。</p>
+    <button class="btn ghost wide" data-act="local">練習モードではじめる</button>
+  </section>`;
+}
+
+function viewHeader(){
+  const me = mySeat();
+  const stepIdx = PHASES.findIndex(p=>p[0]===S.phase);
+  const steps = (S.phase==='lobby'||S.phase==='final') ? '' :
+    `<div class="steps">${PHASES.map((p,i)=>`<span class="${i===stepIdx?'on':i<stepIdx?'done':''}">${p[1]}</span>`).join('')}</div>`;
+  const yr = S.phase==='lobby' ? '準備中' : S.phase==='final' ? '選挙' : `${S.year}年目 / ${YEARS}年`;
+  const switcher = mode==='local' ? `<div class="switch" aria-label="操作する人">${SEATS.map(s=>`<button class="${s===localSeat?'on':''}" data-act="seat" data-seat="${s}" ${S.seats?.[s]==='npc'?'disabled':''}>${SEATINFO[s].short}${S.seats?.[s]==='npc'?'(NPC)':''}</button>`).join('')}</div>` : '';
+  const who = me ? `<span class="badge">あなた：${esc(SEATINFO[me].label)}</span>` : spectator ? '<span class="badge">見るだけ</span>' : '';
+  return `<header class="top">
+    <div class="brand"><span class="t">デジタルまちづくり議会</span><span class="row" style="gap:6px"><span class="small muted">${yr}</span>${mode==='online'?`<span class="code">${esc(S.code)}</span>`:'<span class="tag">練習モード</span>'}</span></div>
+    ${steps}
+    <div class="row between" style="flex-wrap:nowrap"><div class="me">${who}</div><button class="btn ghost sm" data-act="endOpen" aria-expanded="${endOpen}">終了</button></div>${switcher}${endOpen?endPanel():''}
+  </header>`;
+}
+
+function needs(){
+  const y=Y(), ph=S.phase, pres=present();
+  if (ph==='voices') return [['mayor', !!y.aiMode]];
+  if (ph==='budget') return [['mayor', !!y.budget]];
+  if (ph==='amend') return COUNCIL.filter(s=>pres.includes(s)).map(s=>[s, !!y.amends?.[s]]);
+  if (ph==='amendVote'){
+    const props = COUNCIL.filter(s=>y.amends?.[s] && !y.amends[s].none);
+    return pres.map(s=>[s, props.filter(p=>p!==s).every(p=>y.avotes?.[p]?.[s]!==undefined)]);
+  }
+  if (ph==='method') return pres.map(s=>[s, !!y.mvotes?.[s]]);
+  if (ph==='event' && y.event==='fake') return [['mayor', !!y.eventChoice]];
+  return [];
+}
+
+function viewBar(){
+  const me=mySeat(), n=needs(), map=Object.fromEntries(n);
+  const chips = SEATS.map(s=>{
+    const taken = S.seats?.[s];
+    const st = !taken ? '' : (s in map ? (map[s]?'ok':'wait') : '');
+    const label = taken ? esc(nameOf(s)) : `${SEATINFO[s].short}（空き）`;
+    return `<span class="seat ${st} ${s===me?'you':''}">${st==='ok'?'✓ ':''}${label}</span>`;
+  }).join('');
+  let ctl='';
+  if (isHost()){
+    const waiting = n.filter(x=>!x[1]).map(x=>SEATINFO[x[0]].short);
+    const labels = {lobby:'ゲームをはじめる', voices:'予算案づくりへ', budget:'修正タイムへ', amend:'採決へ', amendVote:'決め方えらびへ', method:'できごとへ', event:'結果を見る', result: S.year>=YEARS?'選挙へ！':'次の年へ'};
+    const block = (S.phase==='voices' && !Y().aiMode) || (S.phase==='budget' && !Y().budget) || (S.phase==='lobby' && present().length<2);
+    if (S.phase==='final') ctl = `<div class="row" style="flex-wrap:nowrap"><button class="btn ghost" style="flex:1" data-act="again">同じメンバーでもう一度</button><button class="btn ghost" data-act="toTop">最初へ</button></div>`;
+    else ctl = `<div class="row between" style="flex-wrap:nowrap">${waiting.length && !block ? `<span class="small muted">まだ：${waiting.join('・')}</span>`:'<span></span>'}<button class="btn" data-act="next" ${block?'disabled':''}>${waiting.length && !block ? 'このまま' : ''}${labels[S.phase]} →</button></div>`;
+  } else if (S.phase!=='final'){
+    ctl = `<p class="small muted">${spectator?'観戦中です。進めるのは市長の役目です。':'進めるのは市長の役目です。'}</p>`;
+  } else ctl = `<button class="btn ghost wide" data-act="toTop">最初の画面にもどる</button>`;
+  const msgs = lastMsgs(); const lm = msgs[msgs.length-1];
+  const unread = Math.max(0, chat.length - seenCount);
+  const ticker = `<button class="ticker" data-act="openTalk" aria-label="議場の声をひらく"><span class="lab">議場の声</span><span class="txt">${lm ? esc((SEATINFO[lm.seat]?nameOf(lm.seat)+'：':'')+lm.text) : (me ? 'タップして発言しよう' : 'まだ発言はありません')}</span>${unread && !talkOpen ? `<span class="unread num">${unread}</span>`:''}</button>`;
+  return `<div class="bar-in">${ticker}<div class="seats">${chips}</div>${ctl}</div>`;
+}
+
+function catRow(c, n, extra=''){
+  return `<div class="brow"><span class="mark mk-${c.id}">${c.mark}</span><div class="stack" style="gap:2px;min-width:0"><b>${c.name}</b><div class="coins">${'<i class="coin"></i>'.repeat(n)}</div></div>${extra || `<span class="left num">${n}</span>`}</div>`;
+}
+function budgetView(b, title){
+  return `<div class="stack" style="gap:0">${title?`<h3>${title}</h3>`:''}${CATS.map(c=>catRow(c, b?.[c.id]||0)).join('')}</div>`;
+}
+function prefsView(highlight){
+  return `<details ${highlight?'open':''}><summary>グループごとに大事なもの</summary><div class="prefs" style="margin-top:8px">${GROUPS.map(g=>{
+    const ws = Object.keys(g.w).sort((a,z)=>g.w[z]-g.w[a]).map(c=>`<span class="mark mk-${c}" style="width:1.6em;height:1.6em;font-size:.75rem;opacity:${g.w[c]===1?1:.55}">${CAT[c].mark}</span>`).join('');
+    return `<div class="row" style="gap:6px;flex-wrap:nowrap">${ws}<span class="${g.id===highlight?'badge':''}">${g.name}</span></div>`;
+  }).join('')}</div><p class="small muted" style="margin-top:6px">濃いマークがいちばん大事、うすいマークは2番目。</p></details>`;
+}
+
+function viewPhase(){
+  const me=mySeat(), y=Y(), host=isHost();
+  switch(S.phase){
+  case 'lobby': return `<section class="card pop">
+      <h2>メンバーを待っています</h2>
+      ${mode==='online'?`<p>スマホのカメラでQRコードを読むと、この部屋に参加できます。アカウントはいりません。部屋コード <span class="code">${esc(S.code)}</span> を入れて参加することもできます。</p>
+      <div class="qrbox"><div id="qr" class="qr" data-url="${esc(joinUrl('room', S.code))}"></div><div class="stack" style="gap:6px;min-width:0"><b>参加用</b><span class="small url">${esc(joinUrl('room', S.code))}</span><button class="btn ghost sm" data-act="copyUrl" data-v="${esc(joinUrl('room', S.code))}">URLをコピー</button><span class="small muted">観戦用（スクリーン用）</span><span class="small url">${esc(joinUrl('watch', S.code))}</span></div></div>`:'<p>練習モードです。上のボタンで役を切りかえながら進めます。</p>'}
+      <div class="stack">${SEATS.map(s=>seatLine(s)).join('')}</div>
+      <p class="small muted">人数が足りないときは、空いている議員の席に<b>NPC</b>（コンピューターの議員）を入れられます。NPCは支持グループのために修正案を出し、投票し、議場の声で発言します。</p>
+    </section>${opinionPicker('pre')}${prefsView(me && SEATINFO[me].group)}`;
+
+  case 'voices': {
+    if (S.year===1) return eraView() + viewHall(me, y);
+    const v = VOICES[S.year]; const tot = sum(v);
+    const qs = GROUPS.flatMap(g=>QUOTES[g.id].map(q=>({g,q}))).filter((_,i)=>(i+S.year)%5!==0).slice(0,8);
+    let summary='';
+    if (y.aiMode){
+      const order = Object.keys(v).sort((a,z)=>v[z]-v[a]);
+      let rows;
+      if (y.aiMode==='major'){
+        const top=order.slice(0,3); const other = order.slice(3).reduce((a,k)=>a+v[k],0);
+        rows = top.map(k=>[GR[k].name, v[k], '']).concat([['その他', other, 'gone']]);
+      } else rows = order.map(k=>[GR[k].name, v[k], k==='minor'?'minor':'']);
+      summary = `<div class="card pop"><h3>${y.aiMode==='read'?'職員が全部読んだ結果':'AIのまとめ'}</h3>
+        <div class="bars">${rows.map(r=>`<div class="bar"><span>${esc(r[0])}</span><span class="track"><span class="fill ${r[2]}" style="width:${Math.max(3,r[1]/tot*100*2.6)}%"></span></span><span class="num">${Math.round(r[1]/tot*100)}%</span></div>`).join('')}</div>
+        ${y.aiMode==='major' ? '<p class="small muted">「その他」の中に何が入っているかは、このまとめからはわからない。</p>' : `<p class="voice"><b>5%の声（${GR.minor.name}）</b>「${QUOTES.minor[S.year%2]}」</p>`}
+        <p class="small"><b>効果：</b>${AIMODES[y.aiMode].fx}</p></div>`;
+    }
+    const pick = (me==='mayor') ? `<div class="stack">${aiModesFor(S.year).map(k=>[k,AIMODES[k]]).map(([k,a])=>`<button class="opt ${y.aiMode===k?'sel':''}" data-act="ai" data-v="${k}"><span class="mark mk-m">${k==='read'?'人':'AI'}</span><span class="stack"><b>${a.name}</b><span class="small muted">${a.desc}</span><span class="fx">${a.fx}</span></span></button>`).join('')}</div>`
+      : (!y.aiMode ? '<p class="muted">市長が、意見のまとめ方をえらんでいます。どれがいいか、声をかけてみよう。</p>' : '');
+    return eraView() + `<section class="card pop">
+      <div class="row between"><h2>市民の声がとどいた</h2><span class="counter num">${tot}<span style="font-size:1rem">件</span></span></div>
+      <div class="voices">${qs.map(x=>`<div class="voice"><b>${esc(x.g.name)}</b>「${esc(x.q)}」</div>`).join('')}</div>
+      <p class="small muted">1件30秒でも、全部読むと8時間以上。1人ずつ話を聞くと…33時間！</p>
+      ${me==='mayor' ? '<h3>市長：どうやってまとめる？</h3>':''}${pick}
+    </section>${summary}`;
+  }
+
+  case 'budget': {
+    const total = totalCoins(y);
+    if (me==='mayor'){
+      if (!draft.budget){ draft.budget = y.budget ? clone(y.budget) : {school:2,care:2,road:2,park:2,tax:total-8}; }
+      const b=draft.budget, left = total - sum(b);
+      return `<section class="card pop">
+        <div class="row between"><h2>予算案をつくる</h2><span class="left num">のこり ${left}</span></div>
+        <p class="small muted">今年の予算は <b>${total}コイン</b>。全部を5つの分野に分けよう。</p>
+        <div class="stack" style="gap:0">${CATS.map(c=>catRow(c, b[c.id], `<span class="stepper"><button data-act="bd" data-c="${c.id}" data-d="-1" aria-label="${c.name}をへらす">−</button><span class="v num">${b[c.id]}</span><button data-act="bd" data-c="${c.id}" data-d="1" aria-label="${c.name}をふやす" ${left<=0?'disabled':''}>＋</button></span>`)).join('')}</div>
+        <button class="btn wide" data-act="submitBudget" ${left!==0?'disabled':''}>${y.budget?'予算案を出しなおす':'予算案を発表する'}</button>
+        ${y.budget?'<p class="small" style="color:var(--good)">発表しました。議員の反応を見てみよう。</p>':''}
+      </section>${prefsView(null)}`;
+    }
+    return `<section class="card pop">
+      <h2>市長が予算案をつくっています</h2>
+      ${y.budget ? budgetView(y.budget,'市長の予算案') : `<p class="muted">今年の予算は ${total}コイン。あなたの支持グループのために、市長に意見を伝えよう。</p>`}
+    </section>${prefsView(me && SEATINFO[me].group)}`;
+  }
+
+  case 'amend': {
+    const b = y.budget; let form='';
+    if (COUNCIL.includes(me)){
+      const mine = y.amends?.[me];
+      const a = draft.amend;
+      const opts = sel => CATS.map(c=>`<option value="${c.id}" ${sel===c.id?'selected':''}>${c.name}</option>`).join('');
+      const ok = a.from!==a.to && (b[a.from]||0)>=a.amt;
+      const rs = REASONS[SEATINFO[me].group] || [];
+      form = `<div class="card pop"><h3>修正案を出す</h3>
+        <p class="small muted">あなたは「${esc(GR[SEATINFO[me].group].name)}」の代表。どこからどこへコインを動かす？</p>
+        <div class="grid2"><label class="stack" style="gap:2px"><span class="small">へらす</span><select id="am-from">${opts(a.from)}</select></label>
+        <label class="stack" style="gap:2px"><span class="small">ふやす</span><select id="am-to">${opts(a.to)}</select></label></div>
+        <div class="row"><span class="small">何コイン？</span><div class="switch">${[1,2].map(n=>`<button class="${a.amt===n?'on':''}" data-act="amt" data-v="${n}">${n}</button>`).join('')}</div></div>
+        <label class="stack" style="gap:4px"><span class="small">理由（みんなに見えます）</span>
+        <input type="text" id="am-reason" maxlength="40" value="${esc(a.reason)}" placeholder="例：${esc(rs[0]||'')}"></label>
+        <div class="chips">${rs.map(r=>`<button type="button" data-act="reason" data-v="${esc(r)}">${esc(r)}</button>`).join('')}</div>
+        <div class="row"><button class="btn" data-act="submitAmend" ${ok?'':'disabled'}>この修正案を出す</button><button class="btn ghost" data-act="noAmend">修正しない</button></div>
+        ${mine ? `<p class="small" style="color:var(--good)">提出ずみ：${mine.none?'修正なし':`${CAT[mine.from].name} −${mine.amt} → ${CAT[mine.to].name} +${mine.amt}`}</p>`:''}
+        <p class="small muted">修正案は4人中3人の賛成で通る。ほかの議員や市長と交渉しよう！「あなたの案に賛成するから、わたしの案にも…」</p></div>`;
+    } else form = `<div class="card"><p>${me==='mayor'?'議員が修正案を考えています。交渉タイム！ 自分の案を守るか、ゆずるか。':'議員が修正案を考えています。'}</p></div>`;
+    const subs = COUNCIL.filter(s=>S.seats?.[s]).map(s=>{ const x=y.amends?.[s];
+      return `<div class="stack" style="gap:4px;padding:8px 0;border-top:1px dashed var(--line)"><b>${esc(nameOf(s))}</b>${!x?'<span class="small muted">考え中…</span>': x.none?'<span class="small">修正なし（市長の案でOK）</span>':`${amendLine(x)}${x.reason?`<span class="reason">「${esc(x.reason)}」</span>`:''}`}</div>`; }).join('');
+    return `<section class="card pop">${budgetView(b,'市長の予算案')}</section>${form}<section class="card"><h3>議員の修正案</h3><div class="amlist">${subs}</div><button class="btn ghost sm" data-act="openTalk">議場の声で話す</button></section>${prefsView(me && SEATINFO[me].group)}`;
+  }
+
+  case 'amendVote': {
+    const props = COUNCIL.filter(s=>y.amends?.[s] && !y.amends[s].none);
+    const pres = present();
+    return `<section class="card pop"><h2>修正案の採決</h2><p class="small muted">${Math.floor(pres.length/2)+1}人以上の賛成で通ります。出した議員は自動で賛成。</p>
+      ${props.map(p=>{ const a=y.amends[p]; const vs=y.avotes?.[p]||{};
+        const mine = me && me!==p ? `<div class="vote"><button class="yes ${vs[me]===true?'sel':''}" data-act="av" data-p="${p}" data-v="1">賛成</button><button class="no ${vs[me]===false?'sel':''}" data-act="av" data-p="${p}" data-v="0">反対</button></div>` : (me===p?'<span class="tag">あなたの案</span>':'');
+        return `<div class="stack" style="gap:6px;padding:10px 0;border-top:1px dashed var(--line)">
+          <div class="row between"><b>${esc(nameOf(p))}の案</b>${mine}</div>
+          ${amendLine(a)}${a.reason?`<span class="reason">${esc(nameOf(p))}：「${esc(a.reason)}」</span>`:''}
+          <div class="who">${pres.map(s=>{const v = s===p?true:vs[s]; return `<span class="${v===true?'y':v===false?'n':''}">${SEATINFO[s].short}${v===true?' ○':v===false?' ×':' …'}</span>`;}).join('')}</div>
+        </div>`;}).join('')}
+    </section>${budgetView(y.budget,'もとの予算案')}`;
+  }
+
+  case 'method': {
+    const t = tallyMethod(); const b = y.afterAmend || y.budget; const pres=present();
+    const passed = (y.passed||[]).map(nameOf), rej=(y.rejected||[]).map(nameOf);
+    return `<section class="card pop">${budgetView(b,'修正後の予算')}
+      ${passed.length||rej.length?`<p class="small">${passed.length?`可決：${passed.join('・')}の案　`:''}${rej.length?`<span class="muted">否決：${rej.join('・')}の案</span>`:''}</p>`:''}</section>
+      <section class="card pop"><h2>最後に、どうやって決める？</h2>
+      <p class="small muted">4人で投票。同じ数なら市長の票がある方。えらんだ決め方で、予算やまちの様子が変わります。</p>
+      <div class="stack">${methodsFor(S.year).map(k=>[k,METHODS[k]]).map(([k,m])=>{
+        const voters = pres.filter(s=>y.mvotes?.[s]===k).map(s=>SEATINFO[s].short);
+        return `<button class="opt ${y.mvotes?.[me]===k?'sel':''}" data-act="mv" data-v="${k}" ${me?'':'disabled'}><span class="mark mk-m">${m.mark}</span><span class="stack"><b>${m.name} <span class="tag">${m.model}民主主義</span></b><span class="small muted">${m.desc}</span><span class="fx">${m.fx}</span>${voters.length?`<span class="small">投票：${voters.join('・')}</span>`:''}</span></button>`;}).join('')}</div>
+    </section>`;
+  }
+
+  case 'event': {
+    const ev = EVENTS[y.event]; const m = METHODS[y.method]; let extra='';
+    if (y.event==='sns' && y.method==='direct'){
+      const checks = Object.keys(y.checks||{}).filter(s=>y.checks[s]);
+      const canUse = me && !S.checkUsed?.[me];
+      extra = `<div class="yakusoku pop"><h3>市民投票の結果：「少数グループの予算をやめて減税へ」賛成 62%</h3>
+        <p class="small">このままだと決まってしまう。<b>まちの約束（憲法）</b>には「だれかの権利を、多数決でうばってはいけない」と書いてある。</p>
+        <p class="small">カードを出すと止められる。でも、あなたの支持者の一部は「なぜ止めた」とおこるかも（支持 −5）。止めた人には、選挙でボーナス +10。</p>
+        ${checks.length?`<p><b>${checks.map(nameOf).join('・')}がカードを出した！</b></p>`:''}
+        ${me ? (y.checks?.[me] ? '<p class="small" style="color:var(--good)">あなたはカードを出しました。</p>' : canUse ? '<button class="btn sun" data-act="check">まちの約束カードを出す</button>' : '<p class="small muted">あなたのカードはもう使いました。</p>') : ''}
+      </div>`;
+    } else if (y.event==='sns'){
+      extra = `<p class="small muted">今年は「${m.name}」で決めたので、SNSの投票呼びかけは直接は予算に入らない。どうなる？</p>`;
+    }
+    if (y.event==='fake'){
+      extra = me==='mayor' ? `<div class="stack">${Object.entries(FAKE_OPTS).map(([k,o])=>`<button class="opt ${y.eventChoice===k?'sel':''}" data-act="fake" data-v="${k}"><span class="stack"><b>${o.name}</b><span class="fx">${o.fx}</span></span></button>`).join('')}</div>`
+        : (y.eventChoice ? `<p>市長の対応：<b>${FAKE_OPTS[y.eventChoice].name}</b></p>` : '<p class="muted">市長が対応を考えています。</p>');
+    }
+    return `<section class="card pop">${budgetView(y.finalBudget, `決まった予算（${m.name}）`)}${(y.methodNotes||[]).map(t=>`<p class="small">${esc(t)}</p>`).join('')}</section>
+      <section class="event pop">${scene('ev-'+y.event)}<span class="kicker">${S.year}年目のできごと</span><h2>${ev.title}</h2><p>${ev.body}</p></section>${extra}`;
+  }
+
+  case 'result': {
+    const L = S.last || {d:{}, notes:[]};
+    return `<section class="card pop"><h2>${S.year}年目の結果</h2>
+      <ul class="fx-list">${L.notes.map(n=>`<li class="${n.k}">${esc(n.t)}</li>`).join('')}</ul></section>
+      ${S.year===1 ? missedView() : ''}
+      <section class="card"><h3>声がとどいた市民</h3><p><span class="counter num">${y.heard ?? '—'}</span> <span class="muted">/ 1000人</span></p>${S.year===1?'<p class="small muted">来年からはスマホとAIが使えるようになる。この数字はどう変わる？</p>':''}</section>
+      ${supportView(L)}${cityView()}
+      <section class="card"><h3>いまのデジタル民主主義スコア</h3>${radar(calcDDS())}<p class="small muted">6つの軸がバランスよく大きいほど、いいまち。</p></section>`;
+  }
+
+  case 'final': return viewFinal();
+  }
+  return '';
+}
+
+/* ───────── イメージ画像（インラインSVG） ───────── */
+const F = v => `style="fill:var(--${v})"`;
+function person(x,y,c,o={}){
+  const s=o.s||1; let g=`<g transform="translate(${x} ${y}) scale(${s})">`;
+  if (o.chair) g+=`<circle cx="2" cy="6" r="9" style="fill:none;stroke:var(--ink);stroke-width:2.2"/><rect x="-10" y="-4" width="16" height="3" rx="1.5" ${F('ink')}/>`;
+  g+=`<circle cx="0" cy="-22" r="7" ${F('skin')}/><rect x="-8" y="-14" width="16" height="${o.chair?13:22}" rx="7" style="fill:${c}"/>`;
+  if (o.bag) g+=`<rect x="6" y="-12" width="8" height="12" rx="2" ${F('c-road')}/>`;
+  if (o.baby) g+=`<circle cx="-9" cy="-8" r="5" ${F('skin')}/>`;
+  if (o.cane) g+=`<line x1="10" y1="-6" x2="13" y2="8" style="stroke:var(--ink);stroke-width:2"/>`;
+  return g+'</g>';
+}
+function bubble(x,y,w,t,o={}){
+  const h=20; const fill=o.fill||'surface';
+  return `<g><rect x="${x}" y="${y}" width="${w}" height="${h}" rx="9" style="fill:var(--${fill});stroke:var(--line)"/><path d="M${x+12} ${y+h-1} l-4 7 l10 -7z" style="fill:var(--${fill})"/>${t?`<text x="${x+w/2}" y="${y+14}" text-anchor="middle" font-size="10" font-weight="700" style="fill:var(--ink)">${t}</text>`:''}</g>`;
+}
+function phone(x,y,o={}){
+  return `<g transform="translate(${x} ${y})"><rect x="-9" y="-15" width="18" height="30" rx="4" ${F('screen')}/><rect x="-6" y="-11" width="12" height="20" rx="1.5" style="fill:var(--${o.lit||'sky'})"/>${o.dots?`<circle cx="-3" cy="-3" r="1.6" ${F('accent')}/><circle cx="0" cy="-3" r="1.6" ${F('accent')}/><circle cx="3" cy="-3" r="1.6" ${F('accent')}/>`:''}</g>`;
+}
+function house(x,y,lit){ return `<g transform="translate(${x} ${y})"><path d="M0 0 L22 -18 L44 0 Z" ${F('roof')}/><rect x="4" y="0" width="36" height="30" ${F('wall')}/><rect x="11" y="7" width="12" height="10" style="fill:var(--${lit?'glow':'sky'})"/></g>`; }
+function hall(x,y,o={}){
+  return `<g transform="translate(${x} ${y})"><path d="M-6 0 L60 -26 L126 0 Z" ${F('roof')}/><rect x="0" y="0" width="120" height="76" ${F('wall')}/>
+  <rect x="10" y="8" width="100" height="26" rx="3" style="fill:var(--${o.night?'glow':'sky'})"/>
+  <rect x="48" y="46" width="24" height="30" rx="2" ${F('c-tax')}/><text x="60" y="-6" text-anchor="middle" font-size="10" font-weight="800" style="fill:var(--surface)">公民館</text></g>`;
+}
+function scene(k){
+  const W=320,H=150; let g='';
+  const sky = (night)=>`<rect width="${W}" height="${H}" style="fill:var(--${night?'night':'sky'})"/><rect y="${H-22}" width="${W}" height="22" ${F('ground')}/>`;
+  if (k===1 || k==='hero1'){
+    g+=sky(true)+`<circle cx="285" cy="26" r="13" ${F('glow')}/><circle cx="279" cy="22" r="13" ${F('night')}/>`;
+    g+=hall(110,52,{night:true});
+    g+=person(135,82,'var(--c-care)',{s:.7,cane:true})+person(152,82,'var(--c-care)',{s:.7})+person(170,82,'var(--c-tax)',{s:.7})+person(188,82,'var(--c-care)',{s:.7})+person(205,82,'var(--c-tax)',{s:.7});
+    // 階段
+    g+=`<path d="M70 128 h12 v-8 h10 v-8 h10 v-8 h8 v24z" style="fill:var(--line)"/>`;
+    g+=person(52,122,'var(--c-care)',{chair:true,s:.85})+bubble(30,84,22,'?',{});
+    g+=house(4,98,true)+person(22,122,'var(--c-school)',{baby:true,s:.6});
+    g+=person(270,124,'var(--c-park)',{bag:true,s:.85})+bubble(250,86,40,'塾！');
+    g+=`<text x="160" y="146" text-anchor="middle" font-size="10" font-weight="700" style="fill:var(--surface)">平日 夜7時・2階で説明会</text>`;
+  }
+  if (k===2){
+    g+=sky(false)+`<circle cx="290" cy="24" r="12" ${F('glow')}/>`;
+    const xs=[24,62,100,220,258,296];
+    xs.forEach((x,i)=>{ g+=house(x-22,98,false)+phone(x,82,{dots:i%2===0}); g+=`<path d="M${x} 66 Q ${(x+160)/2} 20 160 46" style="fill:none;stroke:var(--accent);stroke-width:1.6;stroke-dasharray:3 4"/>`; });
+    g+=`<rect x="132" y="34" width="56" height="36" rx="10" ${F('accent')}/><text x="160" y="57" text-anchor="middle" font-size="14" font-weight="800" style="fill:var(--accent-ink)">AI</text>`;
+    g+=`<text x="160" y="92" text-anchor="middle" font-size="11" font-weight="800" style="fill:var(--ink)">1000件の声</text>`;
+    g+=`<path d="M160 72 v24" style="stroke:var(--accent);stroke-width:2"/>`;
+    g+=person(140,124,'var(--c-school)',{s:.7})+person(160,124,'var(--c-park)',{s:.7})+person(180,124,'var(--c-care)',{chair:true,s:.6});
+  }
+  if (k===3 || k==='hero'){
+    g+=sky(false);
+    g+=hall(14,52,{});
+    g+=person(36,82,'var(--c-care)',{s:.65})+person(54,82,'var(--c-tax)',{s:.65})+person(96,82,'var(--c-school)',{s:.65})+person(114,82,'var(--c-care)',{s:.65,cane:true});
+    g+=`<rect x="175" y="22" width="104" height="66" rx="6" ${F('screen')}/>`;
+    const cs=['c-park','c-school','c-care','c-road','c-tax','sun'];
+    cs.forEach((c,i)=>{ const x=186+(i%3)*31, y=30+Math.floor(i/3)*28; g+=`<rect x="${x}" y="${y}" width="26" height="22" rx="3" ${F('sky')}/><circle cx="${x+13}" cy="${y+9}" r="4" ${F('skin')}/><rect x="${x+7}" y="${y+14}" width="12" height="7" rx="3" ${F(c)}/>`; });
+    g+=`<text x="227" y="100" text-anchor="middle" font-size="9" font-weight="700" style="fill:var(--ink)">字幕・手話・やさしい日本語</text>`;
+    g+=`<path d="M134 70 C 150 70 160 56 175 56" style="fill:none;stroke:var(--accent);stroke-width:2;stroke-dasharray:4 4"/>`;
+    g+=phone(205,120,{dots:true})+phone(240,120,{lit:'glow'})+phone(275,120,{dots:true})+person(300,126,'var(--c-care)',{chair:true,s:.6});
+  }
+  if (k==='missed'){
+    g+=sky(true);
+    g+=`<line x1="0" y1="40" x2="${W}" y2="40" style="stroke:var(--glow);stroke-width:2;stroke-dasharray:6 6"/><text x="10" y="30" font-size="10" font-weight="700" style="fill:var(--glow)">公民館にとどいた声はここまで</text>`;
+    g+=house(14,98,true)+person(34,122,'var(--c-school)',{baby:true,s:.6})+bubble(4,66,62,'保育園…');
+    g+=person(108,124,'var(--c-park)',{bag:true,s:.8})+bubble(88,66,58,'集まる場所');
+    g+=person(176,124,'var(--c-care)',{chair:true,s:.8})+bubble(152,66,68,'エレベーター');
+    g+=person(250,124,'var(--c-school)',{s:.8})+bubble(226,66,82,'日本語だけ…');
+  }
+  if (k==='ev-sns'){
+    g+=`<rect width="${W}" height="${H}" ${F('screen')}/>`+phone(160,78,{lit:'bad-soft'}).replace('translate(160 78)','translate(160 78) scale(2.6)');
+    for (let i=0;i<9;i++){ const a=i/9*Math.PI*2; g+=bubble(160+Math.cos(a)*120-26, 66+Math.sin(a)*52, 52, i%3===0?'#いらない':i%3===1?'シェア':'💢'.replace('💢','!!'), {fill:'bad-soft'}); }
+  }
+  if (k==='ev-rain'){
+    g+=`<rect width="${W}" height="${H}" style="fill:var(--night)"/>`;
+    for (let i=0;i<40;i++){ const x=(i*37)%W, y=(i*53)%110; g+=`<line x1="${x}" y1="${y}" x2="${x-5}" y2="${y+14}" style="stroke:var(--sky);stroke-width:1.5"/>`; }
+    g+=`<path d="M0 118 Q 80 104 160 118 T 320 118 V150 H0Z" ${F('c-road')}/>`+house(40,90,true)+house(230,92,false);
+  }
+  if (k==='ev-fake'){
+    g+=`<rect width="${W}" height="${H}" ${F('sunk')}/>`+bubble(30,24,170,'病院がなくなるらしい！',{fill:'bad-soft'})+bubble(110,58,120,'ほんとに？？',{})+bubble(60,92,190,'みんなに回して！',{fill:'bad-soft'});
+    g+=person(270,128,'var(--c-care)',{cane:true,s:.9})+bubble(240,70,56,'こわい');
+  }
+  if (k==='ev-fatigue'){
+    g+=`<rect width="${W}" height="${H}" ${F('sky')}/>`+phone(160,74,{lit:'glow'}).replace('translate(160 74)','translate(160 74) scale(2.4)');
+    ['投票してね','また投票','今週も投票','投票まだ？'].forEach((t,i)=>{ g+=bubble(i%2?200:24, 18+i*28, 92, t, {fill:'surface'}); });
+  }
+  if (k==='ev-aimiss'){
+    g+=`<rect width="${W}" height="${H}" ${F('sunk')}/><rect x="60" y="16" width="200" height="118" rx="4" ${F('surface')} /><text x="160" y="42" text-anchor="middle" font-size="16" font-weight="800" style="fill:var(--ink)">AI要約、少数意見を消す</text>`;
+    for (let i=0;i<5;i++) g+=`<rect x="76" y="${56+i*14}" width="${i===4?90:168}" height="6" rx="3" ${F('line')}/>`;
+  }
+  if (k==='ev-generation'){
+    g+=sky(false)+person(90,126,'var(--c-park)',{bag:true,s:1.1})+person(230,126,'var(--c-care)',{cane:true,s:1.1});
+    g+=bubble(30,40,110,'公園とスポーツ広場！')+bubble(176,40,110,'病院とバスが先！');
+    g+=`<text x="160" y="100" text-anchor="middle" font-size="22" font-weight="800" style="fill:var(--bad)">⚡</text>`.replace('⚡','VS');
+  }
+  if (!g) return '';
+  return `<svg class="scene" viewBox="0 0 ${W} ${H}" role="img" aria-hidden="true">${g}</svg>`;
+}
+function endPanel(){
+  const me = mySeat(), host = isHost();
+  let opts = '';
+  if (S.phase==='final') opts = `<button class="btn wide" data-act="toTop">最初の画面にもどる</button>`;
+  else if (host) opts = `<button class="btn wide" data-act="endElection">ここで選挙にする（結果を見る）</button>
+      <button class="btn ghost wide" data-act="toTop">ゲームをやめて最初の画面へ</button>
+      ${mode==='online'?'<p class="small muted">やめても部屋は残るので、同じコードでつづきから再開できます。</p>':''}`;
+  else if (me && COUNCIL.includes(me)) opts = `<button class="btn wide" data-act="leave">部屋をぬける（席はNPCに交代）</button>`;
+  else opts = `<button class="btn wide" data-act="toTop">見るのをやめる</button>`;
+  return `<section class="card pop" style="border:2px solid var(--bad)"><h3>ゲームを終了しますか？</h3>${opts}<button class="btn ghost sm" data-act="endClose">つづける</button></section>`;
+}
+function toTop(){
+  if (unsub) unsub(); if (chatUnsub) chatUnsub(); unsub=chatUnsub=null;
+  S=null; mode=null; spectator=false; endOpen=false; talkOpen=false; chat=[]; errMsg='';
+  ls.set('machi.code',''); startView.joinDoc=null; startView.msg='';
+  render(); window.scrollTo(0,0); if (db) loadRooms();
+}
+function joinUrl(kind, c){ return location.origin + location.pathname + '?' + kind + '=' + c + (backendLabel?'&mock=1':''); }
+function drawQR(){
+  const el = document.getElementById('qr'); if (!el || !window.qrcode) return;
+  try{ const q = qrcode(0, 'M'); q.addData(el.dataset.url); q.make(); el.innerHTML = q.createSvgTag({cellSize: 4, margin: 0}); }catch{}
+}
+function seatLine(s){
+  const v = S.seats?.[s], npc = v==='npc', host = isHost() && mode && S.phase!=='final';
+  let ctl = '';
+  if (host && COUNCIL.includes(s)){
+    if (!v || (mode==='local' && !npc)) ctl = `<button class="btn ghost sm" data-act="npc" data-seat="${s}" data-v="1">NPCを入れる</button>`;
+    else if (npc && S.phase==='lobby') ctl = `<button class="btn ghost sm" data-act="npc" data-seat="${s}" data-v="0">はずす</button>`;
+  }
+  const who = v ? `${npc?'<span class="tag">NPC</span> ':''}${esc(S.names?.[s]||'参加中')}` : '<span class="muted">空き</span>';
+  return `<div class="row between" style="padding:4px 0;border-top:1px dashed var(--line)"><span class="stack" style="gap:0"><span class="small muted">${esc(SEATINFO[s].label)}</span><b>${who}</b></span>${ctl}</div>`;
+}
+function seatAdmin(){
+  if (!isHost() || S.phase==='lobby' || S.phase==='final') return '';
+  return `<details class="card"><summary>席の管理（途中でぬけた人がいるとき）</summary><p class="small muted" style="margin-top:6px">議員の席をNPCに交代できます。交代すると、その席はNPCが最後まで動かします。</p><div class="stack">${COUNCIL.map(s=>seatLine(s)).join('')}</div></details>`;
+}
+function heroScene(){ return scene(3); }
+function eraView(){
+  const e = ERAS[S.year]; if (!e) return '';
+  return `<div class="era ${e.cls} pop">${scene(S.year)}<b>${e.t}</b><span class="small">${e.s}</span></div>`;
+}
+function viewHall(me, y){
+  const tot = sum(HALL);
+  const rows = GROUPS.map(g=>`<div class="bar"><span>${g.name}</span><span class="track"><span class="fill ${g.id==='minor'?'minor':''}" style="width:${HALL[g.id]/tot*100}%"></span></span><span class="num">${HALL[g.id]}人</span></div>`).join('');
+  const qs = [['elder','バスがへって病院に行けない'],['elder','近くに診療所がほしい'],['shop','税金が高くて店をつづけるのが大変'],['family','通学路に歩道がなくてこわい']];
+  return `<section class="card pop">
+    <div class="row between"><h2>公民館の説明会</h2><span class="counter num">${tot}<span style="font-size:1rem">人</span></span></div>
+    <p class="small muted">平日の夜7時、公民館の2階。チラシで知らせた。まちの人口は1万人。</p>
+    <div class="voices">${qs.map(([g,q])=>`<div class="voice"><b>${esc(GR[g].name)}</b>「${esc(q)}」</div>`).join('')}</div>
+    <h3>来た人の内わけ</h3><div class="bars">${rows}</div>
+    <p class="small">顔を見て、じっくり話を聞けた。市長はうれしかった。……でも、ここにいない人はどう思っているんだろう？</p>
+    ${me==='mayor' ? (y.aiMode ? '<p class="small" style="color:var(--good)">会場の声でまとめました。予算づくりへ進もう。</p>' : '<button class="btn wide" data-act="ai" data-v="hall">会場で聞いた声でまとめる</button>') : '<p class="muted small">市長が、会場の声をまとめています。</p>'}
+  </section>`;
+}
+function missedView(){
+  return `<section class="card pop"><h2>とどかなかった声</h2>${scene('missed')}
+    <p class="small">1年目、公民館に来られなかった人たちは、こんなことを思っていた。</p>
+    <div class="missed">${MISSED.map(m=>`<div class="voice"><b>${esc(GR[m.g].name)}</b>「${esc(m.q)}」<span class="why">${esc(m.why)}</span></div>`).join('')}</div>
+    <p class="small muted">対面がだめなのではない。対面「だけ」だと、来られる人の声しかとどかない。</p></section>`;
+}
+function opinionPicker(stage){
+  const me = mySeat(); if (!me) return '';
+  const cur = S.opinion?.[stage]?.[me];
+  return `<section class="card pop"><h3>${stage==='pre'?'はじめる前に':'ゲームを終えて'}、あなたはどう思う？</h3>
+    <p>「${OPINION_Q}」</p>
+    <div class="op">${OPINIONS.map(([k,l])=>`<button class="${cur===k?'sel':''}" data-act="op" data-stage="${stage}" data-v="${k}">${l}</button>`).join('')}</div>
+    ${cur?'<p class="small" style="color:var(--good)">答えました。あとから変えてもOK。</p>':''}</section>`;
+}
+function opinionChange(){
+  const pres = present(); const lab = Object.fromEntries(OPINIONS);
+  const rows = pres.filter(s=>S.opinion?.pre?.[s] || S.opinion?.post?.[s]).map(s=>{
+    const a=S.opinion?.pre?.[s], b=S.opinion?.post?.[s];
+    return `<div class="row between" style="padding:6px 0;border-top:1px dashed var(--line)"><b>${esc(nameOf(s))}</b><span class="small">${a?lab[a]:'—'} → <b>${b?lab[b]:'—'}</b>${a&&b&&a!==b?' <span class="badge">変わった</span>':''}</span></div>`;}).join('');
+  return rows ? `<section class="card"><h3>考えは変わった？</h3><p class="small muted">「${OPINION_Q}」</p>${rows}</section>` : '';
+}
+function heardView(){
+  const ys=[1,2,3].filter(n=>S.years?.[n]);
+  return `<section class="card"><h2>声がとどいた市民（1000人中）</h2><div class="stack" style="gap:8px">${ys.map(n=>{const h=S.years[n].heard??0;return `<div class="heard"><span>${n}年目</span><span class="track"><span class="fill" style="width:${h/10}%"></span></span><span class="num">${h}人</span></div>`;}).join('')}</div>
+    <p class="small">1年目は対面だけ。2年目からデジタル。AIで「多い意見だけ」にすると、またとどかない人が出る。</p></section>`;
+}
+function amendLine(a){
+  return `<div class="row" style="gap:6px"><span class="mark mk-${a.from}">${CAT[a.from].mark}</span><span class="num">−${a.amt}</span><span>→</span><span class="mark mk-${a.to}">${CAT[a.to].mark}</span><span class="num">+${a.amt}</span><span class="small muted">${CAT[a.from].name}から${CAT[a.to].name}へ</span></div>`;
+}
+function supportView(L){
+  const d=L?.d||{};
+  const owner = g => { const s = COUNCIL.find(s=>SEATINFO[s].group===g); return s ? ` <span class="tag">${SEATINFO[s].short}</span>` : ''; };
+  return `<section class="card"><h3>市民の満足度</h3><div class="stack" style="gap:6px">
+    ${GROUPS.map(g=>`<div class="meter"><span class="small">${g.name}${owner(g.id)}</span><span class="track"><span class="fill" style="width:${S.support[g.id]}%;background:${g.id==='minor'?'var(--sun)':'var(--accent)'}"></span></span><span class="num small">${S.support[g.id]} ${d[g.id]?`<span class="delta ${d[g.id]>0?'up':'down'}">${sgn(d[g.id])}</span>`:''}</span></div>`).join('')}
+    <div class="meter"><span class="small">市への信頼</span><span class="track"><span class="fill" style="width:${S.meters.trust*10}%;background:var(--ink)"></span></span><span class="num small">${S.meters.trust}/10 ${L?.dTrust?`<span class="delta ${L.dTrust>0?'up':'down'}">${sgn(L.dTrust)}</span>`:''}</span></div>
+    <div class="meter"><span class="small">投票率</span><span class="track"><span class="fill" style="width:${S.meters.turnout}%;background:var(--ink)"></span></span><span class="num small">${S.meters.turnout}% ${L?.dTurn?`<span class="delta ${L.dTurn>0?'up':'down'}">${sgn(L.dTurn)}</span>`:''}</span></div>
+  </div></section>`;
+}
+function cityView(){
+  return `<section class="card"><h3>まちの様子（これまでに使ったコイン）</h3><div class="city">${CATS.map(c=>`<div class="col"><span class="lab">${c.name}<br><b class="num">${S.invest[c.id]}</b></span>${Array.from({length:S.invest[c.id]},()=>`<i class="blk" style="background:var(--c-${c.id})"></i>`).join('')}</div>`).join('')}</div></section>`;
+}
+function radar(v){
+  const W=380, H=270, cx=190, cy=138, R=86, n=MODELS.length;
+  const pt=(i,r)=>{const a=-Math.PI/2+i*2*Math.PI/n; return [cx+Math.cos(a)*r, cy+Math.sin(a)*r];};
+  let g='';
+  for (let k=1;k<=5;k++){ g+=`<polygon points="${MODELS.map((_,i)=>pt(i,R*k/5).join(',')).join(' ')}" fill="none" stroke="var(--line)" stroke-width="1"/>`; }
+  MODELS.forEach((_,i)=>{const [x,y]=pt(i,R); g+=`<line x1="${cx}" y1="${cy}" x2="${x}" y2="${y}" stroke="var(--line)"/>`;});
+  const poly = MODELS.map((m,i)=>pt(i,R*Math.max(.15,v[m.id])/5).join(',')).join(' ');
+  g+=`<polygon points="${poly}" fill="var(--accent)" fill-opacity=".25" stroke="var(--accent)" stroke-width="2.5"/>`;
+  MODELS.forEach((m,i)=>{const [x,y]=pt(i,R*Math.max(.15,v[m.id])/5); g+=`<circle cx="${x}" cy="${y}" r="4" fill="${m.id==='const'?'var(--sun)':'var(--accent)'}"/>`;});
+  MODELS.forEach((m,i)=>{const [x,y]=pt(i,R+26); const anchor = Math.abs(x-cx)<10?'middle':x>cx?'start':'end'; const dx = anchor==='start'?-8:anchor==='end'?8:0;
+    g+=`<text x="${x+dx}" y="${y-2}" text-anchor="${anchor}" font-size="12" font-weight="700" fill="var(--ink)">${m.name} ${v[m.id]}</text><text x="${x+dx}" y="${y+12}" text-anchor="${anchor}" font-size="10" fill="var(--muted)">${m.sub}</text>`;});
+  return `<svg class="radar" viewBox="0 0 ${W} ${H}" role="img" aria-label="デジタル民主主義スコア：${MODELS.map(m=>m.name+v[m.id]).join('、')}">${g}</svg>`;
+}
+
+function viewFinal(){
+  const f = finalScores(); const me=mySeat();
+  const weak = MODELS.filter(m=>f.dds[m.id]<2).map(m=>m.name);
+  const early = S.endedAt && S.endedAt < YEARS ? `<p class="small muted">${S.endedAt}年目のとちゅうで終了して選挙をしました。</p>` : '';
+  return `${opinionPicker('post')}<section class="hero pop"><span class="ey">${early?'とちゅうで選挙':'3年後の選挙'}</span>${early}<h1>${f.rows[0] ? esc(nameOf(f.rows[0].s))+'の勝ち！' : '結果発表'}</h1></section>
+    <section class="card pop"><h2>選挙の結果</h2>
+      ${f.rows.map((r,i)=>`<div class="rank"><span class="pos num">${i+1}</span><div class="stack" style="gap:2px;min-width:0"><b>${esc(nameOf(r.s))}${r.s===me?'（あなた）':''}</b><span class="small muted">${esc(r.why)}${r.bonus?` ・ 約束カード +${r.bonus}`:''} ・ まちのボーナス ${sgn(r.city)}</span><span class="small" style="color:${r.reelect?'var(--good)':'var(--bad)'};font-weight:700">${r.reelect?'再選！':'落選…'}</span></div><span class="left num" style="font-size:1.4rem">${r.total}</span></div>`).join('')}
+    </section>
+    <section class="card"><h2>まちのデジタル民主主義スコア</h2>${radar(f.dds)}
+      <p class="small">2以上の軸が <b>${f.ok}/6</b> なので、全員にまちのボーナス <b>${sgn(f.ok*3)}</b>。${f.lost?'<br><span style="color:var(--bad)">少ない声の満足度が30未満になったので、全員 −15。だれかを置き去りにしたまちは、みんなの負け。</span>':''}</p>
+      ${weak.length?`<p class="small muted">弱かった軸：${weak.join('・')}</p>`:''}
+    </section>
+    ${heardView()}${opinionChange()}
+    ${supportView(null)}${cityView()}
+    <section class="card"><h2>研究者はこう考えている</h2>
+      <p class="note">クリスチャン・フックスさん（パーダーボルン大学）は、デジタル民主主義には「まちの約束（立憲）・代表・直接・多元・熟議・参加」の6つの形があると言っています。</p>
+      <p class="small">いちばん大事なのは、すべての土台になる<b>まちの約束（憲法）</b>。スマホで参加できる人がふえても、話し合いが盛り上がっても、それが「だれかを追い出そう」という方向に使われたら民主主義ではなくなってしまうからです。</p>
+      <p class="small">フックスさんは、オンラインの話し合いが顔を合わせた話し合いを<b>全部置きかえるべきではない</b>とも言っています。顔を合わせると、つながりや信頼が生まれるからです。デジタルは対面のかわりではなく、来られない人の声をとどける道具。</p>
+      <p class="small">それに、人にはのんびり休む時間も必要。だから、えらばれた代表にまかせる仕組みも大切です。1つの形だけでなく、組み合わせることが大事だと考えられています。</p>
+    </section>
+    <section class="card"><h2>みんなでふりかえろう</h2>
+      <ol class="rules">
+        <li>1年目の公民館に来られなかったのは、どんな人だった？ あなたのまわりにもいる？</li>
+        <li>AIで意見をまとめたとき、だれの声が見えなくなった？</li>
+        <li>「多数決で決まったこと」なら、何でも正しいと言える？</li>
+        <li>オンライン投票と話し合い、どんなときにどちらが向いている？</li>
+        <li>自分の支持者と、少ない声のグループ。どちらを守るか迷ったのはどんなとき？</li>
+      </ol>
+    </section>`;
+}
+
+/* ───────── 操作 ───────── */
+document.addEventListener('input', e=>{
+  if (e.target.id==='nick') startView.nick = e.target.value;
+  if (e.target.id==='joincode') startView.join = e.target.value.replace(/\D/g,'');
+  if (e.target.id==='watchcode') startView.watch = e.target.value.replace(/\D/g,'');
+  if (e.target.id==='am-reason') draft.amend.reason = e.target.value;
+});
+document.addEventListener('change', e=>{
+  if (e.target.id==='am-from'){ draft.amend.from = e.target.value; render(); }
+  if (e.target.id==='am-to'){ draft.amend.to = e.target.value; render(); }
+});
+document.addEventListener('click', async e=>{
+  const b = e.target.closest('[data-act]'); if (!b || b.disabled) return;
+  const act=b.dataset.act, me=mySeat(), yr=S?.year;
+  errMsg='';
+  switch(act){
+    case 'local': startLocal(); break;
+    case 'openTalk': talkOpen=true; seenCount=chat.length; renderTalk(); $('#bar').innerHTML=viewBar(); setTimeout(()=>{ if (mySeat()) $('#talk-input').focus({preventScroll:true}); },50); return;
+    case 'closeTalk': talkOpen=false; renderTalk(); $('#bar').innerHTML=viewBar(); return;
+    case 'say': say(b.dataset.v); return;
+    case 'reason': draft.amend.reason=b.dataset.v; render(); return;
+    case 'create': await createRoom(); break;
+    case 'find': await findRoom(); break;
+    case 'claim': await claimSeat(b.dataset.seat); break;
+    case 'watch': await watchRoom(); break;
+    case 'watchCode': await watchRoom(b.dataset.code); break;
+    case 'watchByCode': await watchByCode(); break;
+    case 'rooms': loadRooms(); return;
+    case 'seat': localSeat=b.dataset.seat; render(); break;
+    case 'next': next(); break;
+    case 'again': if (isHost()){ const s = newGameState(S.seats.mayor, S.names.mayor); s.seats=clone(S.seats); s.names=clone(S.names); if (mode==='local'){ S=s; render(); } else { ref.set(s).catch(()=>{errMsg='リセットできませんでした。';render();}); } } break;
+    case 'ai': if (me==='mayor') write({years:{[yr]:{aiMode:b.dataset.v}}}); break;
+    case 'bd': { const c=b.dataset.c, d=+b.dataset.d; const t=totalCoins(Y()); const nb=draft.budget; if (d<0 && nb[c]>0) nb[c]--; if (d>0 && sum(nb)<t) nb[c]++; render(); break; }
+    case 'submitBudget': if (me==='mayor' && sum(draft.budget)===totalCoins(Y())) write({years:{[yr]:{budget:clone(draft.budget)}}}); break;
+    case 'amt': draft.amend.amt=+b.dataset.v; render(); break;
+    case 'submitAmend': if (COUNCIL.includes(me)) write({years:{[yr]:{amends:{[me]:{from:draft.amend.from,to:draft.amend.to,amt:draft.amend.amt,none:false,reason:(draft.amend.reason||'').trim().slice(0,40)}}}}}); break;
+    case 'noAmend': if (COUNCIL.includes(me)) write({years:{[yr]:{amends:{[me]:{none:true}}}}}); break;
+    case 'av': if (me) write({years:{[yr]:{avotes:{[b.dataset.p]:{[me]:b.dataset.v==='1'}}}}}); break;
+    case 'mv': if (me) write({years:{[yr]:{mvotes:{[me]:b.dataset.v}}}}); break;
+    case 'check': if (me && !S.checkUsed?.[me]) write({years:{[yr]:{checks:{[me]:true}}}, checkUsed:{[me]:true}}); break;
+    case 'retry': connect(); return;
+    case 'copyUrl': { const t=b.dataset.v; try{ await navigator.clipboard.writeText(t); b.textContent='コピーしました'; }catch{ b.textContent=t; } return; }
+    case 'endOpen': endOpen=!endOpen; render(); if (endOpen) window.scrollTo({top:0,behavior:'smooth'}); return;
+    case 'endClose': endOpen=false; render(); return;
+    case 'toTop': toTop(); return;
+    case 'endElection': if (isHost()){ endOpen=false; write({phase:'final', endedAt:S.year||0}); } return;
+    case 'leave': if (me && COUNCIL.includes(me)){ setNpc(me, true); setTimeout(toTop, 400); } return;
+    case 'npc': setNpc(b.dataset.seat, b.dataset.v==='1'); break;
+    case 'op': if (me) write({opinion:{[b.dataset.stage]:{[me]:b.dataset.v}}}); break;
+    case 'fake': if (me==='mayor') write({years:{[yr]:{eventChoice:b.dataset.v}}}); break;
+  }
+});
+
+function startLocal(){
+  mode='local'; code='0000'; localSeat='mayor'; chat=[]; seenCount=0; chatReady=true;
+  S = newGameState('local-mayor','市長');
+  S.seats = {mayor:'local-mayor', c1:'local-c1', c2:'local-c2', c3:'local-c3'};
+  S.names = {mayor:'', c1:'', c2:'', c3:''};
+  render();
+}
+function nick(){ const n=(startView.nick||'').trim().slice(0,10); if (n) ls.set('machi.nick', n); return n; }
+function subscribe(c){
+  mode='online'; code=c; ref=db.doc('games/'+c);
+  if (unsub) unsub();
+  unsub = ref.onSnapshot(snap=>{
+    if (!snap.exists){ S=null; startView.msg='部屋がなくなりました。'; render(); return; }
+    S = snap.data(); render();
+  }, err=>{ errMsg='接続が切れました。ページを開きなおしてください。'; render(); });
+  ls.set('machi.code', c);
+  subscribeChat(c);
+}
+async function createRoom(){
+  const n = nick(); if (!n){ startView.msg='ニックネームを入れてください。'; render(); return; }
+  startView.busy=true; render();
+  try{
+    let ok=false, c;
+    for (let i=0;i<10 && !ok;i++){ c=String(1000+Math.floor(Math.random()*9000)); code=c; ok = await db.createRoom(c, newGameState(uid, n)); }
+    if (!ok) throw new Error('full');
+    subscribe(c);
+  }catch(e){ startView.msg = '部屋をつくれませんでした。もう一度ためしてください。'; }
+  startView.busy=false; render();
+}
+async function findRoom(){
+  const c = (startView.join||'').trim();
+  if (!/^\d{4}$/.test(c)){ startView.msg='部屋コードは4けたの数字です。'; render(); return; }
+  startView.busy=true; startView.msg=''; render();
+  try{
+    const s = await db.doc('games/'+c).get();
+    if (!s.exists){ startView.msg='その部屋は見つかりません。コードを確かめてください。'; }
+    else { const d=s.data(); if (SEATS.some(x=>d.seats?.[x]===uid)){ subscribe(c); } else startView.joinDoc=d; }
+  }catch{ startView.msg='通信できませんでした。'; }
+  startView.busy=false; render();
+}
+async function claimSeat(seat){
+  const n = nick(); if (!n){ startView.msg='ニックネームを入れてください。'; render(); return; }
+  const c = startView.joinDoc.code;
+  try{
+    const s = await db.doc('games/'+c).get(); const d=s.data();
+    if (d.seats?.[seat]){ startView.joinDoc=d; startView.msg='その席はほかの人が取りました。'; render(); return; }
+    await db.doc('games/'+c).update({seats:{[seat]:uid}, names:{[seat]:n}});
+    startView.joinDoc=null; subscribe(c);
+  }catch(e){ startView.msg = '参加できませんでした。電波を確かめて、もう一度ためしてください。'; render(); }
+}
+async function watchRoom(c){ c = c || startView.joinDoc?.code; if (!c) return; spectator=true; startView.joinDoc=null; startView.msg=''; subscribe(c); window.scrollTo(0,0); }
+async function watchByCode(){
+  const c=(startView.watch||'').trim();
+  if (!/^\d{4}$/.test(c)){ startView.wmsg='部屋コードは4けたの数字です。'; render(); return; }
+  try{ const d=await db.doc('games/'+c).get(); if (!d.exists){ startView.wmsg='その部屋は見つかりません。'; render(); return; } startView.wmsg=''; watchRoom(c); }
+  catch{ startView.wmsg='通信できませんでした。'; render(); }
+}
+async function loadRooms(){
+  startView.roomsLoading=true; if (!S) render();
+  try{
+    const q = await db.collection('games').where('created','>', Date.now()-12*3600e3).limit(30).get();
+    startView.rooms = q.docs.map(d=>d.data()).filter(d=>d && d.code).sort((a,z)=>(z.created||0)-(a.created||0));
+  }catch{ startView.rooms = []; }
+  startView.roomsLoading=false; if (!S) render();
+}
+function phaseLabel(d){
+  if (d.phase==='lobby') return 'メンバー募集中';
+  if (d.phase==='final') return '選挙の結果';
+  const ph = PHASES.find(x=>x[0]===d.phase); return `${d.year}年目・${ph?ph[1]:''}`;
+}
+function watchSection(){
+  const v=startView, rooms=v.rooms||[];
+  return `<section class="card">
+    <h2>見るだけで参加する</h2>
+    <p class="small muted">ゲームに参加していない人も、進み方・議場の声・まちの様子をリアルタイムで見られます。投票や発言はできません。会場のスクリーンに映すのにも使えます。</p>
+    <div class="row between"><h3>いま遊んでいる部屋</h3><button class="btn ghost sm" data-act="rooms">更新</button></div>
+    ${v.roomsLoading ? '<p class="small muted">さがしています…</p>' : rooms.length ? `<div class="stack" style="gap:0">${rooms.map(d=>`<div class="row between" style="padding:8px 0;border-top:1px dashed var(--line);flex-wrap:nowrap"><span class="stack" style="gap:0;min-width:0"><b><span class="code">${esc(d.code)}</span> ${esc(d.names?.mayor||'')}市長の部屋</b><span class="small muted">${esc(phaseLabel(d))} ・ ${SEATS.filter(x=>d.seats?.[x]).length}人</span></span><button class="btn sm" data-act="watchCode" data-code="${esc(d.code)}">見る</button></div>`).join('')}</div>` : '<p class="small muted">いまは遊んでいる部屋がありません。</p>'}
+    <div class="row" style="flex-wrap:nowrap"><input type="text" id="watchcode" inputmode="numeric" maxlength="4" placeholder="部屋コード4けた" value="${esc(v.watch||'')}"><button class="btn ghost" data-act="watchByCode">見る</button></div>
+    ${v.wmsg?`<div class="err">${esc(v.wmsg)}</div>`:''}
+  </section>`;
+}
+
+/* ───────── 起動 ───────── */
+render();
+let capWhy = ''; let canWrite = null;
+async function connect(){
+  capsReady=false; capWhy=''; render();
+  try{
+    const r = await window.MachiBackend.init();
+    db = r.db; user = r.user; uid = await user.id(); canWrite = true; capWhy = r.why || ''; backendLabel = r.label || '';
+  }catch{ capWhy = '接続に失敗しました。'; }
+  capsReady=true;
+  // URL の ?room=1234（参加） / ?watch=1234（観戦）
+  const qp = new URLSearchParams(location.search);
+  const qRoom = (qp.get('room')||'').replace(/\D/g,'').slice(0,4), qWatch = (qp.get('watch')||'').replace(/\D/g,'').slice(0,4);
+  if (db && qWatch){ watchRoom(qWatch); return; }
+  if (db && qRoom){ startView.join = qRoom; }
+  if (db) loadRooms();
+  if (db && uid){
+    const last = ls.get('machi.code');
+    if (last){ try{ const s=await db.doc('games/'+last).get(); if (s.exists && SEATS.some(x=>s.data().seats?.[x]===uid) && s.data().phase!=='final'){ subscribe(last); return; } }catch{} }
+    if (qRoom){ await findRoom(); return; }
+  }
+  if (!S) render();
+}
+connect();
+})();
+</script>
+</body>
+</html>
